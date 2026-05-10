@@ -327,10 +327,10 @@
       </form>
 
       <div class="fnav">
-        <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
+        <button type="button" id="backBtn" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
         <button type="button" class="btn btn-primary" id="submitBtn" onclick="window.MCC.pages.register.submit()">
           <span id="submitText" data-i18n="register.btn.submit">Daftar Sekarang</span>
-          <span id="submitSpinner" style="display:none;margin-left:0.5rem">⟳</span>
+          <span id="submitSpinner" class="btn-spinner" style="display:none"></span>
         </button>
       </div>
     </div>`;
@@ -469,10 +469,12 @@
     const submitBtn = document.getElementById('submitBtn');
     const submitText = document.getElementById('submitText');
     const submitSpinner = document.getElementById('submitSpinner');
+    const backBtn = document.getElementById('backBtn');
 
     submitBtn.disabled = true;
+    if (backBtn) backBtn.disabled = true;
     submitText.style.display = 'none';
-    submitSpinner.style.display = 'inline';
+    submitSpinner.style.display = 'inline-block';
 
     if (!SCRIPT_URL) {
       setTimeout(() => {
@@ -524,6 +526,7 @@
       console.error('[register] submit error', err);
       alert('Gagal mengirim data. Silakan coba lagi atau hubungi panitia.');
       submitBtn.disabled = false;
+      if (backBtn) backBtn.disabled = false;
       submitText.style.display = 'inline';
       submitSpinner.style.display = 'none';
     }

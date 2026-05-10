@@ -1,0 +1,86 @@
+[
+  {
+    "id": "umum",
+    "label": { "id": "Umum", "en": "General" },
+    "questions": [
+      {
+        "q": { "id": "Apa itu Mobile Legends Corporate Championship (MCC)?", "en": "What is Mobile Legends Corporate Championship (MCC)?" },
+        "a": { "id": "MCC adalah turnamen <strong>Mobile Legends: Bang Bang</strong> yang diperuntukkan khusus bagi tim-tim dari lingkungan perusahaan dan korporat di Indonesia. Tujuannya adalah mempererat hubungan antar karyawan melalui kompetisi esports yang sehat dan profesional.", "en": "MCC is a <strong>Mobile Legends: Bang Bang</strong> tournament exclusively for teams from corporate and company environments in Indonesia. The goal is to strengthen employee relationships through healthy and professional esports competition." }
+      },
+      {
+        "q": { "id": "Kapan MCC Season 1 akan diselenggarakan?", "en": "When will MCC Season 1 take place?" },
+        "a": { "id": "MCC Season 1 direncanakan berlangsung dari <strong>Mei-Juni 2026</strong>. Pendaftaran dibuka mulai 11 Mei 2026 dan ditutup 27 Mei 2026.", "en": "MCC Season 1 is planned to run from <strong>May-June 2026</strong>. Registration opens May 11, 2026 and closes May 27, 2026." }
+      },
+      {
+        "q": { "id": "Di mana turnamen ini diselenggarakan?", "en": "Where is the tournament held?" },
+        "a": { "id": "Tournament ini akan diselenggarakan secara online dan akan live stream pada kanal youtube resmi Mandiri Club eSports.", "en": "This tournament will be held online and will be live streamed on the official Mandiri Club eSports YouTube channel." }
+      },
+      {
+        "q": { "id": "Apakah ada live streaming pertandingan?", "en": "Will matches be live streamed?" },
+        "a": { "id": "Semua Pertandingan akan di-<strong>live stream</strong> melalui kanal YouTube Mandiri Club eSports.", "en": "All of the matches will be <strong>live streamed</strong> via Mandiri Club eSports official YouTube." }
+      }
+    ]
+  },
+  {
+    "id": "registrasi",
+    "label": { "id": "Registrasi", "en": "Registration" },
+    "questions": [
+      {
+        "q": { "id": "Siapa yang boleh mendaftar?", "en": "Who is eligible to register?" },
+        "a": { "id": "Turnamen ini <strong>khusus untuk karyawan aktif</strong> perusahaan/instansi. Setiap anggota tim wajib berasal dari perusahaan yang sama. Satu perusahaan diperbolehkan mendaftarkan maksimal <strong>2 tim</strong>.", "en": "This tournament is <strong>exclusively for active employees</strong> of a company or institution. All team members must be from the same company. One company may register a maximum of <strong>2 teams</strong>." }
+      },
+      {
+        "q": { "id": "Berapa biaya pendaftaran?", "en": "What is the registration fee?" },
+        "a": { "id": "Biaya pendaftaran adalah <strong>Rp 250.000 per tim</strong>. Pembayaran dilakukan setelah form registrasi disubmit. Panitia akan menghubungi PIC tim melalui WhatsApp dengan detail instruksi pembayaran.", "en": "The registration fee is <strong>Rp 250,000 per team</strong>. Payment is made after the registration form is submitted. The committee will contact the team PIC via WhatsApp with payment instructions." }
+      },
+      {
+        "q": { "id": "Berapa jumlah pemain yang diperlukan?", "en": "How many players are required?" },
+        "a": { "id": "Setiap tim wajib mendaftarkan minimum <strong>5 pemain inti</strong> dan dapat mendaftarkan maksimal <strong>2 pemain cadangan</strong> (total 7 pemain). Semua pemain harus didaftarkan sebelum Technical Meeting.", "en": "Each team must register a minimum of <strong>5 main players</strong> and may register up to <strong>2 substitute players</strong> (7 players total). All players must be registered before the Technical Meeting." }
+      },
+      {
+        "q": { "id": "Apakah bisa mengganti pemain setelah pendaftaran?", "en": "Can players be changed after registration?" },
+        "a": { "id": "Pergantian pemain hanya dapat dilakukan <strong>sebelum Technical Meeting</strong> dengan mengajukan permohonan ke panitia. Setelah Technical Meeting, roster tim bersifat final dan tidak dapat diubah.", "en": "Player changes can only be made <strong>before the Technical Meeting</strong> by submitting a request to the committee. After the Technical Meeting, the team roster is final and cannot be changed." }
+      }
+    ]
+  },
+  {
+    "id": "peraturan",
+    "label": { "id": "Peraturan", "en": "Rules" },
+    "questions": [
+      {
+        "q": { "id": "Apa format kompetisi MCC?", "en": "What is the MCC competition format?" },
+        "a": { "id": "<ul><li><strong>Fase Grup:</strong> Round-robin dalam grup, format Best of 1 (BO1).</li><li><strong>Fase Eliminasi:</strong> Single elimination bracket, format Best of 3 (BO3).</li><li><strong>Grand Final:</strong> Best of 5 (BO5), diselenggarakan offline.</li></ul>", "en": "<ul><li><strong>Group Stage:</strong> Round-robin within group, Best of 1 (BO1) format.</li><li><strong>Elimination Stage:</strong> Single elimination bracket, Best of 3 (BO3) format.</li><li><strong>Grand Final:</strong> Best of 5 (BO5), held offline.</li></ul>" }
+      },
+      {
+        "q": { "id": "Apa yang terjadi jika tim tidak hadir saat jadwal bertanding?", "en": "What happens if a team doesn't show up for a scheduled match?" },
+        "a": { "id": "Tim diberikan toleransi <strong>15 menit</strong> setelah jadwal yang ditetapkan. Jika melebihi waktu tersebut tanpa konfirmasi, tim dinyatakan <strong>WO (Walk Over)</strong> dan lawan diberikan kemenangan otomatis.", "en": "Teams are given a <strong>15-minute</strong> grace period after the scheduled time. If exceeded without confirmation, the team is declared <strong>WO (Walk Over)</strong> and the opponent is awarded an automatic win." }
+      },
+      {
+        "q": { "id": "Apakah hero tertentu bisa di-ban?", "en": "Can specific heroes be banned?" },
+        "a": { "id": "Ya. Sistem ban-pick mengikuti aturan standar turnamen Mobile Legends: <strong>3 ban per tim</strong> sebelum draft pick dimulai. Hero yang di-ban tidak dapat dipilih oleh kedua tim selama pertandingan tersebut.", "en": "Yes. The ban-pick system follows standard Mobile Legends tournament rules: <strong>3 bans per team</strong> before the draft pick begins. Banned heroes cannot be picked by either team during that match." }
+      },
+      {
+        "q": { "id": "Apakah penggunaan cheat/hack diperbolehkan?", "en": "Is the use of cheats or hacks allowed?" },
+        "a": { "id": "<strong>Sama sekali tidak.</strong> Penggunaan cheat, hack, modifikasi game, atau third-party tools yang tidak diizinkan akan mengakibatkan <strong>diskualifikasi permanen</strong> dari turnamen ini dan pelaporan ke pihak Moonton.", "en": "<strong>Absolutely not.</strong> Use of cheats, hacks, game modifications, or unauthorized third-party tools will result in <strong>permanent disqualification</strong> from the tournament and a report to Moonton." }
+      }
+    ]
+  },
+  {
+    "id": "teknis",
+    "label": { "id": "Teknis", "en": "Technical" },
+    "questions": [
+      {
+        "q": { "id": "Platform apa yang digunakan untuk komunikasi?", "en": "What platform is used for communication?" },
+        "a": { "id": "Seluruh komunikasi resmi dilakukan melalui <strong>grup WhatsApp</strong> yang dibuat panitia setelah Technical Meeting. Jadwal pertandingan, pengumuman, dan update lainnya akan dikirim melalui grup tersebut.", "en": "All official communication is done through a <strong>WhatsApp group</strong> created by the committee after the Technical Meeting. Match schedules, announcements, and updates will be sent through that group." }
+      },
+      {
+        "q": { "id": "Bagaimana cara membuat room pertandingan?", "en": "How is the match room created?" },
+        "a": { "id": "Room pertandingan dibuat oleh <strong>tim dengan seed lebih tinggi</strong> (atau tim yang disebut pertama dalam jadwal). Kode room dikirimkan ke lawan maksimal 5 menit sebelum jadwal. Instruksi detail akan diberikan di Technical Meeting.", "en": "The match room is created by the <strong>higher-seeded team</strong> (or the team listed first in the schedule). The room code must be sent to the opponent at least 5 minutes before the scheduled time. Detailed instructions will be given at the Technical Meeting." }
+      },
+      {
+        "q": { "id": "Apakah diperlukan screenshot hasil pertandingan?", "en": "Is a screenshot of the match result required?" },
+        "a": { "id": "Ya. Tim yang menang wajib mengirimkan <strong>screenshot hasil akhir pertandingan</strong> (layar victory/defeat + scoreboard) ke admin panitia di WhatsApp dalam waktu <strong>30 menit</strong> setelah pertandingan selesai.", "en": "Yes. The winning team must send a <strong>screenshot of the final match result</strong> (victory/defeat screen + scoreboard) to the committee admin on WhatsApp within <strong>30 minutes</strong> after the match ends." }
+      }
+    ]
+  }
+]

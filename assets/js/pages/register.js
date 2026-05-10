@@ -214,7 +214,7 @@
         <p style="color:var(--text-dim);margin-bottom:1.5rem">Scan QRIS di bawah untuk melakukan pembayaran, kemudian upload bukti pembayaran.</p>
 
         <div style="background:white;display:inline-block;padding:1rem;border-radius:12px;margin-bottom:1.5rem">
-          <img src="assets/images/qris.jpeg" alt="QRIS Pembayaran" style="width:720px;height:720px;object-fit:contain;display:block" />
+          <img src="assets/images/qris.jpeg" alt="QRIS Pembayaran" style="width:1080px;height:1080px;object-fit:contain;display:block" />
         </div>
 
         <div style="background:rgba(230,0,38,0.08);border:1px solid rgba(230,0,38,0.3);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem">

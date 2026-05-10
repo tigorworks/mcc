@@ -14,9 +14,9 @@
     berkas_file: null,
     payment_proof_file: null,
     teams: [
-      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] },
-      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] },
-      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] }
+      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [], enabled: true },
+      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [], enabled: false },
+      { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [], enabled: false }
     ]
   };
 
@@ -28,7 +28,7 @@
   }
 
   function registeredTeams() {
-    return _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
+    return _data.teams.filter(tm => tm.enabled && tm.name && tm.name.trim() !== '');
   }
 
   function renderStepBar(step) {
@@ -103,7 +103,7 @@
     </div>`;
   }
 
-  function playerRowsHtml(teamIndex, isOptional) {
+  function playerRowsHtml(teamIndex) {
     const team = _data.teams[teamIndex];
     const playerCount = team.players.length;
 
@@ -111,34 +111,33 @@
 
     for (let i = 0; i < Math.max(5, playerCount); i++) {
       const player = team.players[i] || { name: '', game_id: '', game_nick: '' };
-      const isSlotOptional = isOptional || i >= 5;
-      const canDelete = !isOptional && i > 4;
+      const isExtra = i >= 5;
 
       html += `
-      <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.player')} ${i + 1} ${!isSlotOptional ? '*' : ''}</label>
+      <div class="fgroup">
+        <label class="fi-label">${t('register.label.player')} ${i + 1} ${!isExtra ? '*' : ''}</label>
         <input type="text" data-player="${i}" data-field="name" class="fi player-input"
                value="${player.name || ''}" placeholder="Nama Pemain" />
       </div>
-      <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.game_id')} ${!isSlotOptional ? '*' : ''}</label>
+      <div class="fgroup">
+        <label class="fi-label">${t('register.label.game_id')} ${!isExtra ? '*' : ''}</label>
         <input type="text" data-player="${i}" data-field="game_id" class="fi player-input"
-               value="${player.game_id || ''}" data-i18n-placeholder="register.placeholder.game_id" placeholder="123456" />
+               value="${player.game_id || ''}" placeholder="123456" />
       </div>
-      <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.game_nick')} ${!isSlotOptional ? '*' : ''}</label>
+      <div class="fgroup">
+        <label class="fi-label">${t('register.label.game_nick')} ${!isExtra ? '*' : ''}</label>
         <div style="display:flex;gap:0.5rem;align-items:flex-end">
           <input type="text" data-player="${i}" data-field="game_nick" class="fi player-input"
-                 value="${player.game_nick || ''}" data-i18n-placeholder="register.placeholder.game_nick" placeholder="Username" style="flex:1" />
-          ${canDelete ? `<button type="button" class="btn btn-red-outline" style="padding:0.5rem 0.75rem;font-size:0.75rem" data-i18n="register.btn.remove" onclick="window.MCC.pages.register.removePlayer(${teamIndex},${i})">Hapus</button>` : ''}
+                 value="${player.game_nick || ''}" placeholder="Username" style="flex:1" />
+          ${isExtra ? `<button type="button" class="btn btn-red-outline" style="padding:0.5rem 0.75rem;font-size:0.75rem" onclick="window.MCC.pages.register.removePlayer(${teamIndex},${i})">Hapus</button>` : ''}
         </div>
       </div>`;
     }
 
     html += '</div>';
 
-    if (!isOptional && playerCount < 7) {
-      html += `<button type="button" class="btn btn-outline" style="margin-top:1rem" data-i18n="register.btn.add_player" onclick="window.MCC.pages.register.addPlayer(${teamIndex})">+ Tambah Pemain</button>`;
+    if (playerCount < 7) {
+      html += `<button type="button" class="btn btn-outline" style="margin-top:1rem" onclick="window.MCC.pages.register.addPlayer(${teamIndex})">+ Tambah Pemain</button>`;
     }
 
     return html;
@@ -148,6 +147,7 @@
     const teamNum = teamIndex + 1;
     const team = _data.teams[teamIndex];
     const isOptional = teamIndex >= 1;
+    const isEnabled = !isOptional || team.enabled;
 
     return `
     ${renderPageHero()}
@@ -155,40 +155,44 @@
       ${renderStepBar(_step)}
       <form id="regForm${_step}" class="reg-form">
         <div class="fcard">
-          <h3 style="margin-top:0">${t('register.section.team')} ${teamNum}${isOptional ? ' <span style="font-size:0.75rem;font-weight:400;color:var(--text-dim);background:rgba(255,255,255,0.08);padding:0.2rem 0.6rem;border-radius:99px;vertical-align:middle">Opsional</span>' : ''}</h3>
-          ${isOptional ? `<p style="color:var(--text-dim);font-size:0.9rem;margin-top:-0.5rem;margin-bottom:1rem">Tim ini opsional. Kosongkan Nama Tim jika tidak ingin mendaftarkan tim ini.</p>` : ''}
+          <h3 style="margin-top:0">${t('register.section.team')} ${teamNum}</h3>
+          ${isOptional ? `
+          <div class="fcheck" style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
+            <input type="checkbox" id="teamEnabled${teamIndex}"
+                   ${team.enabled ? 'checked' : ''}
+                   onchange="window.MCC.pages.register.toggleTeam(${teamIndex}, this.checked)" />
+            <label for="teamEnabled${teamIndex}" style="font-weight:600">Daftarkan Tim ${teamNum}</label>
+          </div>
+          <div id="teamFields${teamIndex}" style="${team.enabled ? '' : 'display:none'}">` : ''}
           <div class="fgrid">
             <div class="fgroup">
-              <label class="fi-label">Nama Tim ${!isOptional ? '*' : ''}</label>
-              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${!isOptional ? 'required' : `oninput="window.MCC.pages.register.toggleOptionalPlayers(${teamIndex}, this.value)"`} />
+              <label class="fi-label">Nama Tim *</label>
+              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${isEnabled ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label">Nama Kapten ${!isOptional ? '*' : ''}</label>
-              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" ${!isOptional ? 'required' : ''} />
+              <label class="fi-label">Nama Kapten *</label>
+              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" ${isEnabled ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label">WhatsApp Kapten ${!isOptional ? '*' : ''}</label>
-              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" placeholder="628..." ${!isOptional ? 'required' : ''} />
+              <label class="fi-label">WhatsApp Kapten *</label>
+              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" placeholder="628..." ${isEnabled ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label">Logo Tim (Gambar) ${!isOptional ? '*' : ''}</label>
-              <input type="file" name="logo_file" class="fi" accept="image/*" ${!isOptional ? 'required' : ''} />
-              <small style="color:var(--text-dim);margin-top:0.5rem;display:block" data-i18n="register.helper.logo">Format: JPG, PNG, SVG</small>
+              <label class="fi-label">Logo Tim (Gambar) *</label>
+              <input type="file" name="logo_file" class="fi" accept="image/*" ${isEnabled && !team.logo_file ? 'required' : ''} />
+              <small style="color:var(--text-dim);margin-top:0.5rem;display:block">Format: JPG, PNG, SVG</small>
             </div>
           </div>
+          ${isOptional ? '</div>' : ''}
         </div>
 
-        ${!isOptional ? `
-        <div class="fcard">
-          <h3 data-i18n="register.section.players">Daftar Pemain</h3>
-          <small style="color:var(--text-dim)" data-i18n="register.helper.players">Minimal 5 pemain wajib diisi, maksimal 7 pemain</small>
-          ${playerRowsHtml(teamIndex, false)}
-        </div>` : `
-        <div class="fcard" id="optionalPlayersCard${teamIndex}" style="${team.name ? '' : 'display:none'}">
-          <h3 data-i18n="register.section.players">Daftar Pemain</h3>
-          <small style="color:var(--text-dim)">Minimal 5 pemain wajib diisi jika tim didaftarkan</small>
-          ${playerRowsHtml(teamIndex, false)}
-        </div>`}
+        <div ${isOptional ? `id="teamPlayersCard${teamIndex}" style="${team.enabled ? '' : 'display:none'}"` : ''}>
+          <div class="fcard">
+            <h3 data-i18n="register.section.players">Daftar Pemain</h3>
+            <small style="color:var(--text-dim)" data-i18n="register.helper.players">Minimal 5 pemain wajib diisi, maksimal 7 pemain</small>
+            ${playerRowsHtml(teamIndex)}
+          </div>
+        </div>
       </form>
       <div class="fnav">
         <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
@@ -369,14 +373,13 @@
       const form = document.getElementById(`regForm${step}`);
       if (!form) return;
 
-      const team_name = (form.team_name.value || '').trim();
-
-      // Tim opsional yang dikosongkan — reset dan lanjut
-      if (isOptional && !team_name) {
-        _data.teams[teamIndex] = { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] };
+      // Tim opsional yang tidak dicentang — reset dan lanjut
+      if (isOptional && !_data.teams[teamIndex].enabled) {
+        _data.teams[teamIndex] = { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [], enabled: false };
         return true;
       }
 
+      const team_name = (form.team_name.value || '').trim();
       const captain_name = form.captain_name.value;
       const captain_wa = form.captain_wa.value;
       const logo_file = form.logo_file.files[0];
@@ -391,7 +394,7 @@
       }
 
       const players = [];
-      document.querySelectorAll(`#regForm${step} .player-input`).forEach(input => {
+      document.querySelectorAll(`.player-input`).forEach(input => {
         const playerIdx = parseInt(input.dataset.player);
         const field = input.dataset.field;
         if (!players[playerIdx]) players[playerIdx] = { name: '', game_id: '', game_nick: '' };
@@ -409,7 +412,8 @@
         logo_file: logo_file || _data.teams[teamIndex].logo_file,
         captain_name: captain_name,
         captain_wa: captain_wa,
-        players: validPlayers
+        players: validPlayers,
+        enabled: true
       };
       return true;
     } else if (step === 5) {
@@ -520,7 +524,7 @@
   }
 
   function _savePlayers(teamIndex) {
-    const inputs = document.querySelectorAll(`#regForm${_step} .player-input`);
+    const inputs = document.querySelectorAll(`.player-input`);
     const saved = [];
     inputs.forEach(input => {
       const idx = parseInt(input.dataset.player);
@@ -591,9 +595,12 @@
       }
     },
 
-    toggleOptionalPlayers(teamIndex, value) {
-      const card = document.getElementById(`optionalPlayersCard${teamIndex}`);
-      if (card) card.style.display = value.trim() ? '' : 'none';
+    toggleTeam(teamIndex, enabled) {
+      _data.teams[teamIndex].enabled = enabled;
+      const fields = document.getElementById(`teamFields${teamIndex}`);
+      const players = document.getElementById(`teamPlayersCard${teamIndex}`);
+      if (fields) fields.style.display = enabled ? '' : 'none';
+      if (players) players.style.display = enabled ? '' : 'none';
     },
 
     submit() {

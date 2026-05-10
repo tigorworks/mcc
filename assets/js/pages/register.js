@@ -2,7 +2,7 @@
   window.MCC = window.MCC || {};
   window.MCC.pages = window.MCC.pages || {};
 
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec'; // Isi dengan Google Apps Script endpoint URL
+  const SCRIPT_URL = '__SCRIPT_URL__';
 
   let _members = null;
   let _step = 1;

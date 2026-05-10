@@ -3,7 +3,7 @@
   window.MCC.pages = window.MCC.pages || {};
 
   const SCRIPT_URL = '__SCRIPT_URL__';
-  const TEAM_FEE = 500000; // Biaya pendaftaran per tim (Rupiah)
+  const TEAM_FEE = 500000; // Biaya pendaftaran per tim (Rupiah) 
 
   let _members = null;
   let _step = 1;

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tim Terdaftar — MCC</title>
+  <link rel="icon" href="assets/images/mcc.png" />
+  <script src="assets/js/head.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <style>
+    .teams-wrap { padding: 0 2.5rem 5rem; max-width: 1200px; margin: 0 auto; }
+
+    /* ===== STATS BAR ===== */
+    .slot-bar {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 2.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .slot-info { font-family: var(--font-head); font-size: 1rem; color: var(--text-muted); }
+    .slot-info strong { color: var(--white); font-size: 1.4rem; }
+
+    .slot-progress { flex: 1; min-width: 200px; }
+    .slot-progress-label { font-family: var(--font-head); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.4rem; display: flex; justify-content: space-between; }
+    .progress-track { height: 6px; background: var(--bg-3); border-radius: 3px; overflow: hidden; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--red-dark), var(--red)); border-radius: 3px; transition: width 1s ease; }
+
+    /* ===== SEARCH / FILTER ===== */
+    .filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      align-items: center;
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem 1rem;
+    }
+
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .search-wrap svg {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 15px;
+      height: 15px;
+      color: var(--text-muted);
+      pointer-events: none;
+      transition: color var(--transition);
+    }
+
+    .search-wrap:focus-within svg { color: var(--red); }
+
+    .search-wrap input {
+      width: 100%;
+      height: 40px;
+      padding: 0 0.9rem 0 2.4rem;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .search-wrap input::placeholder { color: #444; }
+
+    .search-wrap input:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(230, 0, 38, 0.1);
+    }
+
+    .filter-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .filter-select-wrap {
+      position: relative;
+      min-width: 200px;
+      flex-shrink: 0;
+    }
+
+    .filter-select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 5px solid var(--text-muted);
+      pointer-events: none;
+      transition: border-top-color var(--transition);
+    }
+
+    .filter-select-wrap:focus-within::after { border-top-color: var(--red); }
+
+    .filter-select {
+      width: 100%;
+      height: 40px;
+      padding: 0 2.2rem 0 0.9rem;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      cursor: pointer;
+      -webkit-appearance: none;
+      appearance: none;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .filter-select option { background: var(--bg-3); color: var(--text); }
+
+    .filter-select:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(230, 0, 38, 0.1);
+    }
+
+    .filter-count {
+      font-family: var(--font-head);
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .filter-count strong { color: var(--red); }
+
+    @media (max-width: 600px) {
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-divider { display: none; }
+      .filter-select-wrap { min-width: unset; }
+      .filter-count { text-align: center; }
+    }
+
+    /* ===== TEAMS GRID ===== */
+    .teams-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .team-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+      cursor: default;
+    }
+
+    .team-card:hover {
+      border-color: var(--border-red);
+      box-shadow: 0 0 20px rgba(230,0,38,0.12);
+      transform: translateY(-2px);
+    }
+
+    .team-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .team-tag-wrap {}
+
+    .team-tag {
+      font-family: var(--font-head);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--red);
+      line-height: 1;
+    }
+
+    .team-name {
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      color: var(--white);
+      margin-top: 0.2rem;
+    }
+
+    .team-number {
+      font-family: var(--font-head);
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.15rem 0.4rem;
+      align-self: flex-start;
+    }
+
+    .team-logo {
+      width: 52px; height: 56px;
+      clip-path: polygon(50% 0%, 100% 22%, 100% 76%, 50% 100%, 0% 76%, 0% 22%);
+      background: var(--bg-3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-head);
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--tc, var(--red));
+      letter-spacing: 0.04em;
+      filter: drop-shadow(0 0 7px var(--tc, var(--red)));
+      flex-shrink: 0;
+    }
+
+    .team-company {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+
+    .team-roster-preview {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .ign-chip {
+      font-size: 0.72rem;
+      font-family: var(--font-head);
+      letter-spacing: 0.06em;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 0.15rem 0.5rem;
+      color: var(--text-muted);
+    }
+
+    .no-result {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem;
+      color: var(--text-muted);
+    }
+
+    .no-result svg { width: 48px; margin: 0 auto 1rem; opacity: 0.3; }
+
+    @media (max-width: 640px) {
+      .teams-wrap { padding: 0 1.25rem 4rem; }
+      .slot-bar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div id="nav-root"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <h1 data-i18n-html="teams.hero.title">Tim <span>Terdaftar</span></h1>
+  <p data-i18n="teams.hero.subtitle">Daftar tim yang telah resmi terdaftar di MCC Season 1.</p>
+</div>
+
+<div class="teams-wrap" style="padding-top: 2.5rem;">
+
+  <!-- Slot Progress -->
+  <div class="slot-bar" data-aos="fade-up">
+    <div class="slot-info">
+      <strong id="teamCount">12</strong> / 32 <span data-i18n="teams.slot.registered">tim terdaftar</span>
+    </div>
+    <div class="slot-progress">
+      <div class="slot-progress-label">
+        <span data-i18n="teams.slot.label">Slot Terisi</span>
+        <span id="slotPct">37.5%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBar" style="width: 0%"></div>
+      </div>
+    </div>
+    <a href="register.html" class="btn btn-primary" style="white-space: nowrap;" data-i18n="teams.btn.register">+ Daftar Tim</a>
+  </div>
+
+  <!-- Filter & Search -->
+  <div class="filter-bar" data-aos="fade-up">
+    <div class="search-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" id="searchInput" data-i18n-placeholder="teams.filter.placeholder" placeholder="Cari nama tim, tag, atau perusahaan..." />
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-select-wrap">
+      <select class="filter-select" id="filterCompany">
+        <option value="" data-i18n="teams.filter.all_companies">Semua Perusahaan</option>
+      </select>
+    </div>
+    <div class="filter-divider"></div>
+    <div class="filter-count"><strong id="resultCount">12</strong> <span data-i18n="teams.filter.results">tim ditemukan</span></div>
+  </div>
+
+  <!-- Teams Grid -->
+  <div class="teams-grid" id="teamsGrid"></div>
+
+</div>
+
+<!-- FOOTER -->
+<div id="footer-root"></div>
+<script src="assets/js/init.js"></script>
+<script>
+const TEAM_PALETTE = ['#e60026','#2563eb','#7c3aed','#059669','#d97706','#0891b2','#db2777','#65a30d','#ea580c','#0284c7','#9333ea','#16a34a'];
+
+// Dummy team data
+const TEAMS = [
+  { id: 1,  tag: 'GRD', name: 'Garuda Esports',     company: 'PT Garuda Nusantara',       city: 'Jakarta',   roster: ['GrdXayne', 'GrdPanda', 'GrdRoamz', 'GrdNova', 'GrdKnight'] },
+  { id: 2,  tag: 'BNI', name: 'BNI Warriors',        company: 'Bank Negara Indonesia',     city: 'Jakarta',   roster: ['WrrBlaze', 'WrrShadow', 'WrrRaid', 'WrrZero', 'WrrForce'] },
+  { id: 3,  tag: 'TLK', name: 'Telkom Red',          company: 'PT Telkom Indonesia',       city: 'Bandung',   roster: ['RedLine', 'RedAxe', 'RedMoon', 'RedSteel', 'RedFire'] },
+  { id: 4,  tag: 'BCA', name: 'BCA Titans',          company: 'Bank Central Asia',         city: 'Jakarta',   roster: ['TitanX', 'TitanY', 'TitanZ', 'TitanW', 'TitanV'] },
+  { id: 5,  tag: 'GOJ', name: 'GoJek Galaxy',        company: 'GoTo Group',                city: 'Jakarta',   roster: ['GXPetra', 'GXLunar', 'GXRift', 'GXMars', 'GXSun'] },
+  { id: 6,  tag: 'TKP', name: 'Tokopedia Wolves',    company: 'GoTo Group',                city: 'Jakarta',   roster: ['WlvAlpha', 'WlvBeta', 'WlvGamma', 'WlvDelta', 'WlvEpsilon'] },
+  { id: 7,  tag: 'PLN', name: 'PLN Thunder',         company: 'PT PLN Persero',            city: 'Jakarta',   roster: ['TndBolt', 'TndStorm', 'TndCloud', 'TndVolt', 'TndFlash'] },
+  { id: 8,  tag: 'XLX', name: 'XL Axiata Blaze',    company: 'XL Axiata',                 city: 'Jakarta',   roster: ['XLBz1', 'XLBz2', 'XLBz3', 'XLBz4', 'XLBz5'] },
+  { id: 9,  tag: 'MNL', name: 'Mandiri Lions',       company: 'Bank Mandiri',              city: 'Jakarta',   roster: ['LionKing', 'LionQueen', 'LionJack', 'LionAce', 'LionTen'] },
+  { id: 10, tag: 'SHP', name: 'Shopee Phoenix',      company: 'Sea Ltd',                   city: 'Jakarta',   roster: ['PHXRise', 'PHXAsh', 'PHXFlame', 'PHXWing', 'PHXTail'] },
+  { id: 11, tag: 'PRT', name: 'Pertamina Rockets',   company: 'PT Pertamina',              city: 'Jakarta',   roster: ['RktBoost', 'RktFuel', 'RktLaunch', 'RktOrbit', 'RktFlare'] },
+  { id: 12, tag: 'IND', name: 'Indosat Storm',       company: 'Indosat Ooredoo Hutchison', city: 'Surabaya',  roster: ['StrmElec', 'StrmWater', 'StrmEarth', 'StrmFire', 'StrmWind'] },
+];
+
+let filtered = [...TEAMS];
+
+function renderTeams(data) {
+  const grid = document.getElementById('teamsGrid');
+  const t = window.MCC?.i18n?.t ?? (k => k);
+  if (!data.length) {
+    grid.innerHTML = `<div class="no-result">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <p>${t('teams.no_result')}</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = data.map((tm, i) => {
+    const color = TEAM_PALETTE[(tm.id - 1) % TEAM_PALETTE.length];
+    return `
+    <div class="team-card" data-aos="fade-up" data-aos-delay="${(i % 4) * 60}">
+      <div class="team-header">
+        <div style="display:flex;align-items:center;gap:0.85rem;">
+          <div class="team-logo" style="--tc:${color}">${tm.tag}</div>
+          <div class="team-tag-wrap">
+            <div class="team-tag" style="color:${color}">${tm.tag}</div>
+            <div class="team-name">${tm.name}</div>
+          </div>
+        </div>
+        <div class="team-number">#${String(tm.id).padStart(2, '0')}</div>
+      </div>
+      <div class="team-company">🏢 ${tm.company} &nbsp;·&nbsp; 📍 ${tm.city}</div>
+      <div class="team-roster-preview">
+        ${tm.roster.map(r => `<span class="ign-chip">${r}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  AOS.refresh();
+}
+
+function populateCompanyFilter() {
+  const select = document.getElementById('filterCompany');
+  const t = window.MCC?.i18n?.t ?? (k => k);
+  // Update "All Companies" option text
+  select.options[0].textContent = t('teams.filter.all_companies');
+  // Clear previously added options
+  while (select.options.length > 1) select.remove(1);
+  const companies = [...new Set(TEAMS.map(t => t.company))].sort();
+  companies.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c; opt.textContent = c;
+    select.appendChild(opt);
+  });
+}
+
+function applyFilters() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const company = document.getElementById('filterCompany').value;
+  filtered = TEAMS.filter(t => {
+    const matchQ = !q || t.name.toLowerCase().includes(q) || t.company.toLowerCase().includes(q) || t.tag.toLowerCase().includes(q);
+    const matchC = !company || t.company === company;
+    return matchQ && matchC;
+  });
+  document.getElementById('resultCount').textContent = filtered.length;
+  renderTeams(filtered);
+}
+
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('filterCompany').addEventListener('change', applyFilters);
+
+// Init
+populateCompanyFilter();
+renderTeams(TEAMS);
+
+window.onLangChange = () => {
+  populateCompanyFilter();
+  applyFilters();
+  window.MCC?.i18n?.apply();
+};
+
+// Animate progress bar
+const total = 32, registered = TEAMS.length;
+const pct = (registered / total * 100).toFixed(1);
+document.getElementById('teamCount').textContent = registered;
+document.getElementById('slotPct').textContent = pct + '%';
+setTimeout(() => {
+  document.getElementById('progressBar').style.width = pct + '%';
+}, 300);
+</script>
+</body>
+</html>

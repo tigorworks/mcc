@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FAQ — MCC</title>
+  <link rel="icon" href="assets/images/mcc.png" />
+  <script src="assets/js/head.js"></script>
+  <script src="assets/js/i18n.js"></script>
+  <style>
+    .faq-wrap { padding: 0 2.5rem 5rem; max-width: 820px; margin: 0 auto; padding-top: 2.5rem; }
+
+    /* ===== CATEGORY TABS ===== */
+    .faq-tabs {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+
+    .faq-tab {
+      font-family: var(--font-head);
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 0.4rem 1rem;
+      border-radius: 2px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      background: var(--bg-2);
+      transition: var(--transition);
+    }
+
+    .faq-tab:hover { border-color: var(--border-red); color: var(--white); }
+    .faq-tab.active { background: var(--red); border-color: var(--red); color: var(--white); }
+
+    /* ===== ACCORDION ===== */
+    .faq-group { display: none; }
+    .faq-group.active { display: block; }
+
+    .faq-group-label {
+      font-family: var(--font-head);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 1rem;
+      margin-top: 0.25rem;
+    }
+
+    .accordion {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 0.75rem;
+      transition: border-color var(--transition);
+    }
+
+    .accordion.open { border-color: var(--border-red); }
+
+    .accordion-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1.15rem 1.5rem;
+      cursor: pointer;
+      background: var(--bg-card);
+      transition: background var(--transition);
+      user-select: none;
+    }
+
+    .accordion-header:hover { background: rgba(255,255,255,0.02); }
+
+    .accordion-q {
+      font-family: var(--font-head);
+      font-size: 1.05rem;
+      color: var(--white);
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .accordion-icon {
+      width: 22px; height: 22px;
+      flex-shrink: 0;
+      color: var(--red);
+      transition: transform var(--transition);
+      margin-top: 2px;
+    }
+
+    .accordion.open .accordion-icon { transform: rotate(45deg); }
+
+    .accordion-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.35s ease, padding 0.25s ease;
+      background: var(--bg-2);
+    }
+
+    .accordion.open .accordion-body { max-height: 600px; }
+
+    .accordion-body-inner {
+      padding: 1.25rem 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.7;
+      border-top: 1px solid var(--border);
+    }
+
+    .accordion-body-inner strong { color: var(--white); }
+    .accordion-body-inner a { color: var(--red); }
+
+    .accordion-body-inner ul {
+      margin: 0.75rem 0 0.25rem 1.25rem;
+      list-style: disc;
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+
+    /* ===== CONTACT BOX ===== */
+    .contact-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-red);
+      border-radius: var(--radius);
+      padding: 2rem;
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    .contact-box h3 { font-size: 1.5rem; color: var(--white); margin-bottom: 0.5rem; }
+    .contact-box p  { color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.25rem; }
+
+    .contact-links { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 600px) { .faq-wrap { padding: 0 1.25rem 4rem; padding-top: 2rem; } }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<div id="nav-root"></div>
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <h1 data-i18n-html="faq.hero.title">Pertanyaan yang Sering <span>Ditanyakan</span></h1>
+  <p data-i18n="faq.hero.subtitle">Temukan jawaban atas pertanyaan umum seputar MCC Season 1.</p>
+</div>
+
+<div class="faq-wrap">
+
+  <!-- Category Tabs (populated from JSON) -->
+  <div class="faq-tabs" id="faqTabs" data-aos="fade-up"></div>
+
+  <!-- FAQ Groups (populated from JSON) -->
+  <div id="faqContent"></div>
+
+  <!-- CONTACT BOX -->
+  <div class="contact-box" data-aos="fade-up">
+    <h3 data-i18n="faq.contact.title">Masih ada pertanyaan?</h3>
+    <p data-i18n="faq.contact.desc">Hubungi tim panitia kami melalui WhatsApp atau email. Kami siap membantu.</p>
+    <div class="contact-links">
+      <a href="https://wa.me/6208128136678" target="_blank" rel="noopener" class="btn btn-outline" data-i18n="faq.contact.btn_wa">💬 WhatsApp Panitia</a>
+      <a href="mailto:mcc@tournament.id" class="btn btn-primary" data-i18n="faq.contact.btn_email">📧 Email Kami</a>
+    </div>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<div id="footer-root"></div>
+<script src="assets/js/init.js"></script>
+<script>
+const PLUS_ICON = `<svg class="accordion-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`;
+
+let _faqData = null;
+let _activeGroup = null;
+
+function renderFaq(data) {
+  const lang      = window.MCC?.i18n?.getLang?.() || 'id';
+  const tabsEl    = document.getElementById('faqTabs');
+  const contentEl = document.getElementById('faqContent');
+  const activeId  = _activeGroup || data[0].id;
+
+  tabsEl.innerHTML = data.map(cat => `
+    <button class="faq-tab${cat.id === activeId ? ' active' : ''}" data-target="${cat.id}">
+      ${typeof cat.label === 'object' ? (cat.label[lang] || cat.label.id) : cat.label}
+    </button>
+  `).join('');
+
+  contentEl.innerHTML = data.map(cat => {
+    const label = typeof cat.label === 'object' ? (cat.label[lang] || cat.label.id) : cat.label;
+    return `
+    <div class="faq-group${cat.id === activeId ? ' active' : ''}" id="grp-${cat.id}" data-aos="fade-up">
+      <div class="faq-group-label">${label}</div>
+      ${cat.questions.map((item, j) => {
+        const q = typeof item.q === 'object' ? (item.q[lang] || item.q.id) : item.q;
+        const a = typeof item.a === 'object' ? (item.a[lang] || item.a.id) : item.a;
+        return `
+        <div class="accordion${j === 0 ? ' open' : ''}">
+          <div class="accordion-header">
+            <span class="accordion-q">${q}</span>
+            ${PLUS_ICON}
+          </div>
+          <div class="accordion-body">
+            <div class="accordion-body-inner">${a}</div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+
+  // Tab switching
+  tabsEl.querySelectorAll('.faq-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      tabsEl.querySelectorAll('.faq-tab').forEach(t => t.classList.remove('active'));
+      contentEl.querySelectorAll('.faq-group').forEach(g => g.classList.remove('active'));
+      tab.classList.add('active');
+      _activeGroup = tab.dataset.target;
+      document.getElementById('grp-' + _activeGroup).classList.add('active');
+      AOS.refresh();
+    });
+  });
+
+  // Accordion toggle
+  contentEl.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const acc    = header.closest('.accordion');
+      const isOpen = acc.classList.contains('open');
+      acc.closest('.faq-group').querySelectorAll('.accordion').forEach(a => a.classList.remove('open'));
+      if (!isOpen) acc.classList.add('open');
+    });
+  });
+
+  AOS.refresh();
+}
+
+fetch('configuration/faq.json')
+  .then(r => r.json())
+  .then(data => {
+    _faqData = data;
+    renderFaq(data);
+  })
+  .catch(() => {
+    document.getElementById('faqContent').innerHTML =
+      '<p style="color:var(--text-muted);text-align:center;padding:3rem;">Gagal memuat data FAQ.</p>';
+  });
+
+window.onLangChange = () => { if (_faqData) renderFaq(_faqData); };
+</script>
+</body>
+</html>

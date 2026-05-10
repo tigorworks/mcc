@@ -157,12 +157,18 @@
         <div class="fcard">
           <h3 style="margin-top:0">${t('register.section.team')} ${teamNum}</h3>
           ${isOptional ? `
-          <div class="fcheck" style="margin-bottom:1.5rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">
-            <input type="checkbox" id="teamEnabled${teamIndex}"
-                   ${team.enabled ? 'checked' : ''}
-                   onchange="window.MCC.pages.register.toggleTeam(${teamIndex}, this.checked)" />
-            <label for="teamEnabled${teamIndex}" style="font-weight:600">Daftarkan Tim ${teamNum}</label>
-          </div>
+          <label class="fcheck-team" for="teamEnabled${teamIndex}">
+            <div class="toggle-switch">
+              <input type="checkbox" id="teamEnabled${teamIndex}"
+                     ${team.enabled ? 'checked' : ''}
+                     onchange="window.MCC.pages.register.toggleTeam(${teamIndex}, this.checked)" />
+              <span class="toggle-slider"></span>
+            </div>
+            <div class="toggle-text">
+              <span class="toggle-title">Daftarkan Tim ${teamNum}</span>
+              <span class="toggle-desc">Aktifkan untuk mendaftarkan tim ini</span>
+            </div>
+          </label>
           <div id="teamFields${teamIndex}" style="${team.enabled ? '' : 'display:none'}">` : ''}
           <div class="fgrid">
             <div class="fgroup">

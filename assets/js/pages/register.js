@@ -160,7 +160,7 @@
           <div class="fgrid">
             <div class="fgroup">
               <label class="fi-label">Nama Tim ${!isOptional ? '*' : ''}</label>
-              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${!isOptional ? 'required' : ''} />
+              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${!isOptional ? 'required' : `oninput="window.MCC.pages.register.toggleOptionalPlayers(${teamIndex}, this.value)"`} />
             </div>
             <div class="fgroup">
               <label class="fi-label">Nama Kapten ${!isOptional ? '*' : ''}</label>
@@ -194,19 +194,7 @@
         <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
         <button type="button" class="btn btn-primary" onclick="window.MCC.pages.register.nextStep()" data-i18n="register.btn.continue">Lanjut</button>
       </div>
-    </div>
-    ${isOptional ? `
-    <script>
-      (function(){
-        var nameInput = document.querySelector('#regForm${_step} [name="team_name"]');
-        var playersCard = document.getElementById('optionalPlayersCard${teamIndex}');
-        if(nameInput && playersCard){
-          nameInput.addEventListener('input', function(){
-            playersCard.style.display = this.value.trim() ? '' : 'none';
-          });
-        }
-      })();
-    </script>` : ''}`;
+    </div>`;
   }
 
   function stepHtml5() {
@@ -601,6 +589,11 @@
         root.innerHTML = this.render();
         window.MCC.i18n?.apply();
       }
+    },
+
+    toggleOptionalPlayers(teamIndex, value) {
+      const card = document.getElementById(`optionalPlayersCard${teamIndex}`);
+      if (card) card.style.display = value.trim() ? '' : 'none';
     },
 
     submit() {

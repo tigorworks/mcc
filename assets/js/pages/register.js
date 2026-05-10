@@ -3,6 +3,7 @@
   window.MCC.pages = window.MCC.pages || {};
 
   const SCRIPT_URL = '__SCRIPT_URL__';
+  const TEAM_FEE = 500000; // Biaya pendaftaran per tim (Rupiah)
 
   let _members = null;
   let _step = 1;
@@ -11,6 +12,7 @@
     pic_name: '',
     pic_wa: '',
     berkas_file: null,
+    payment_proof_file: null,
     teams: [
       { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] },
       { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] },
@@ -21,13 +23,22 @@
   function t(key) { return window.MCC?.i18n?.t(key) ?? key; }
   function getLang() { return window.MCC?.i18n?.getLang?.() || 'id'; }
 
+  function formatRupiah(amount) {
+    return 'Rp ' + amount.toLocaleString('id-ID');
+  }
+
+  function registeredTeams() {
+    return _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
+  }
+
   function renderStepBar(step) {
     const steps = [
       { num: 1, key: 'register.step.1' },
       { num: 2, key: 'register.step.2' },
       { num: 3, key: 'register.step.3' },
       { num: 4, key: 'register.step.4' },
-      { num: 5, key: 'register.step.5' }
+      { num: 5, key: 'register.step.5' },
+      { num: 6, key: 'register.step.6' }
     ];
 
     return `<div class="fstep-bar">
@@ -92,7 +103,7 @@
     </div>`;
   }
 
-  function playerRowsHtml(teamIndex) {
+  function playerRowsHtml(teamIndex, isOptional) {
     const team = _data.teams[teamIndex];
     const playerCount = team.players.length;
 
@@ -100,25 +111,25 @@
 
     for (let i = 0; i < Math.max(5, playerCount); i++) {
       const player = team.players[i] || { name: '', game_id: '', game_nick: '' };
-      const isOptional = i >= 5;
-      const canDelete = isOptional && i > 4;
+      const isSlotOptional = isOptional || i >= 5;
+      const canDelete = !isOptional && i > 4;
 
       html += `
       <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.player')} ${i + 1} ${!isOptional ? '*' : ''}</label>
+        <label class="fi-label">${t('register.label.player')} ${i + 1} ${!isSlotOptional ? '*' : ''}</label>
         <input type="text" data-player="${i}" data-field="name" class="fi player-input"
-               value="${player.name || ''}" placeholder="Nama Pemain" ${!isOptional ? 'required' : ''} />
+               value="${player.name || ''}" placeholder="Nama Pemain" />
       </div>
       <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.game_id')} ${!isOptional ? '*' : ''}</label>
+        <label class="fi-label">${t('register.label.game_id')} ${!isSlotOptional ? '*' : ''}</label>
         <input type="text" data-player="${i}" data-field="game_id" class="fi player-input"
-               value="${player.game_id || ''}" data-i18n-placeholder="register.placeholder.game_id" placeholder="123456" ${!isOptional ? 'required' : ''} />
+               value="${player.game_id || ''}" data-i18n-placeholder="register.placeholder.game_id" placeholder="123456" />
       </div>
       <div class="fgroup" style="position:relative">
-        <label class="fi-label">${t('register.label.game_nick')} ${!isOptional ? '*' : ''}</label>
+        <label class="fi-label">${t('register.label.game_nick')} ${!isSlotOptional ? '*' : ''}</label>
         <div style="display:flex;gap:0.5rem;align-items:flex-end">
           <input type="text" data-player="${i}" data-field="game_nick" class="fi player-input"
-                 value="${player.game_nick || ''}" data-i18n-placeholder="register.placeholder.game_nick" placeholder="Username" style="flex:1" ${!isOptional ? 'required' : ''} />
+                 value="${player.game_nick || ''}" data-i18n-placeholder="register.placeholder.game_nick" placeholder="Username" style="flex:1" />
           ${canDelete ? `<button type="button" class="btn btn-red-outline" style="padding:0.5rem 0.75rem;font-size:0.75rem" data-i18n="register.btn.remove" onclick="window.MCC.pages.register.removePlayer(${teamIndex},${i})">Hapus</button>` : ''}
         </div>
       </div>`;
@@ -126,7 +137,7 @@
 
     html += '</div>';
 
-    if (playerCount < 7) {
+    if (!isOptional && playerCount < 7) {
       html += `<button type="button" class="btn btn-outline" style="margin-top:1rem" data-i18n="register.btn.add_player" onclick="window.MCC.pages.register.addPlayer(${teamIndex})">+ Tambah Pemain</button>`;
     }
 
@@ -136,6 +147,7 @@
   function stepHtmlTeam(teamIndex) {
     const teamNum = teamIndex + 1;
     const team = _data.teams[teamIndex];
+    const isOptional = teamIndex >= 1;
 
     return `
     ${renderPageHero()}
@@ -143,34 +155,94 @@
       ${renderStepBar(_step)}
       <form id="regForm${_step}" class="reg-form">
         <div class="fcard">
-          <h3 style="margin-top:0">${t('register.section.team')} ${teamNum}</h3>
+          <h3 style="margin-top:0">${t('register.section.team')} ${teamNum}${isOptional ? ' <span style="font-size:0.75rem;font-weight:400;color:var(--text-dim);background:rgba(255,255,255,0.08);padding:0.2rem 0.6rem;border-radius:99px;vertical-align:middle">Opsional</span>' : ''}</h3>
+          ${isOptional ? `<p style="color:var(--text-dim);font-size:0.9rem;margin-top:-0.5rem;margin-bottom:1rem">Tim ini opsional. Kosongkan Nama Tim jika tidak ingin mendaftarkan tim ini.</p>` : ''}
           <div class="fgrid">
             <div class="fgroup">
-              <label class="fi-label" data-i18n="register.label.team_name">Nama Tim *</label>
-              <input type="text" name="team_name" class="fi" value="${team.name || ''}" required />
+              <label class="fi-label">Nama Tim ${!isOptional ? '*' : ''}</label>
+              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${!isOptional ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label" data-i18n="register.label.captain_name">Nama Kapten *</label>
-              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" required />
+              <label class="fi-label">Nama Kapten ${!isOptional ? '*' : ''}</label>
+              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" ${!isOptional ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label" data-i18n="register.label.captain_wa">WhatsApp Kapten *</label>
-              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" data-i18n-placeholder="register.placeholder.captain_wa" placeholder="628..." required />
+              <label class="fi-label">WhatsApp Kapten ${!isOptional ? '*' : ''}</label>
+              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" placeholder="628..." ${!isOptional ? 'required' : ''} />
             </div>
             <div class="fgroup">
-              <label class="fi-label" data-i18n="register.label.logo">Logo Tim (Gambar) *</label>
-              <input type="file" name="logo_file" class="fi" accept="image/*" required />
+              <label class="fi-label">Logo Tim (Gambar) ${!isOptional ? '*' : ''}</label>
+              <input type="file" name="logo_file" class="fi" accept="image/*" ${!isOptional ? 'required' : ''} />
               <small style="color:var(--text-dim);margin-top:0.5rem;display:block" data-i18n="register.helper.logo">Format: JPG, PNG, SVG</small>
             </div>
           </div>
         </div>
 
+        ${!isOptional ? `
         <div class="fcard">
           <h3 data-i18n="register.section.players">Daftar Pemain</h3>
           <small style="color:var(--text-dim)" data-i18n="register.helper.players">Minimal 5 pemain wajib diisi, maksimal 7 pemain</small>
-          ${playerRowsHtml(teamIndex)}
+          ${playerRowsHtml(teamIndex, false)}
+        </div>` : `
+        <div class="fcard" id="optionalPlayersCard${teamIndex}" style="${team.name ? '' : 'display:none'}">
+          <h3 data-i18n="register.section.players">Daftar Pemain</h3>
+          <small style="color:var(--text-dim)">Minimal 5 pemain wajib diisi jika tim didaftarkan</small>
+          ${playerRowsHtml(teamIndex, false)}
+        </div>`}
+      </form>
+      <div class="fnav">
+        <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
+        <button type="button" class="btn btn-primary" onclick="window.MCC.pages.register.nextStep()" data-i18n="register.btn.continue">Lanjut</button>
+      </div>
+    </div>
+    ${isOptional ? `
+    <script>
+      (function(){
+        var nameInput = document.querySelector('#regForm${_step} [name="team_name"]');
+        var playersCard = document.getElementById('optionalPlayersCard${teamIndex}');
+        if(nameInput && playersCard){
+          nameInput.addEventListener('input', function(){
+            playersCard.style.display = this.value.trim() ? '' : 'none';
+          });
+        }
+      })();
+    </script>` : ''}`;
+  }
+
+  function stepHtml5() {
+    const count = Math.max(1, registeredTeams().length);
+    const total = count * TEAM_FEE;
+
+    return `
+    ${renderPageHero()}
+    <div class="section-inner reg-wrap">
+      ${renderStepBar(_step)}
+      <div class="fcard" style="text-align:center">
+        <h3 style="margin-top:0">Pembayaran</h3>
+        <p style="color:var(--text-dim);margin-bottom:1.5rem">Scan QRIS di bawah untuk melakukan pembayaran, kemudian upload bukti pembayaran.</p>
+
+        <div style="background:white;display:inline-block;padding:1rem;border-radius:12px;margin-bottom:1.5rem">
+          <img src="assets/images/qris.jpeg" alt="QRIS Pembayaran" style="width:240px;height:240px;object-fit:contain;display:block" />
+        </div>
+
+        <div style="background:rgba(230,0,38,0.08);border:1px solid rgba(230,0,38,0.3);border-radius:10px;padding:1.25rem;margin-bottom:1.5rem">
+          <div style="font-size:0.9rem;color:var(--text-dim);margin-bottom:0.4rem">Total Tim Terdaftar: <strong style="color:var(--text)">${count} tim</strong></div>
+          <div style="font-size:1.5rem;font-weight:700;color:var(--primary)">${formatRupiah(total)}</div>
+          <div style="font-size:0.8rem;color:var(--text-dim);margin-top:0.3rem">${formatRupiah(TEAM_FEE)} × ${count} tim</div>
+        </div>
+      </div>
+
+      <form id="regForm5" class="reg-form">
+        <div class="fcard">
+          <div class="fgroup">
+            <label class="fi-label">Upload Bukti Pembayaran *</label>
+            <input type="file" name="payment_proof_file" class="fi" accept="image/*,.pdf" required />
+            <small style="color:var(--text-dim);margin-top:0.5rem;display:block">Format: JPG, PNG, PDF. Maks 10MB.</small>
+            <div class="file-error" style="color:#e60026;font-size:0.85rem;margin-top:0.5rem;display:none"></div>
+          </div>
         </div>
       </form>
+
       <div class="fnav">
         <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.goBack()" data-i18n="register.btn.back">Kembali</button>
         <button type="button" class="btn btn-primary" onclick="window.MCC.pages.register.nextStep()" data-i18n="register.btn.continue">Lanjut</button>
@@ -178,7 +250,10 @@
     </div>`;
   }
 
-  function stepHtml5() {
+  function stepHtml6() {
+    const activeTeams = _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
+    const total = activeTeams.length * TEAM_FEE;
+
     const summary = `
     ${renderPageHero()}
     <div class="section-inner reg-wrap">
@@ -198,9 +273,17 @@
             <span class="confirm-label" data-i18n="register.confirm.pic_wa">WhatsApp PIC</span>
             <span class="confirm-value">${_data.pic_wa}</span>
           </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Total Pembayaran</span>
+            <span class="confirm-value" style="color:var(--primary);font-weight:700">${formatRupiah(total)}</span>
+          </div>
+          <div class="confirm-row">
+            <span class="confirm-label">Bukti Pembayaran</span>
+            <span class="confirm-value">${_data.payment_proof_file ? _data.payment_proof_file.name : '-'}</span>
+          </div>
         </div>
 
-        ${_data.teams.map((team, i) => `
+        ${activeTeams.map((team, i) => `
         <div style="margin-top:2rem;padding-top:2rem;border-top:1px solid var(--border)">
           <h4 style="margin:0 0 1rem 0">${t('register.section.team')} ${i + 1}: ${team.name}</h4>
           <div class="confirm-grid">
@@ -232,7 +315,7 @@
         </div>`).join('')}
       </div>
 
-      <form id="regForm5" class="reg-form">
+      <form id="regForm6" class="reg-form">
         <div class="fcard" style="background:rgba(230,0,38,0.08);border-color:rgba(230,0,38,0.3)">
           <div class="fcheck">
             <input type="checkbox" id="agree1" required />
@@ -294,13 +377,30 @@
       return true;
     } else if (step >= 2 && step <= 4) {
       const teamIndex = step - 2;
+      const isOptional = teamIndex >= 1;
       const form = document.getElementById(`regForm${step}`);
       if (!form) return;
 
-      const team_name = form.team_name.value;
+      const team_name = (form.team_name.value || '').trim();
+
+      // Tim opsional yang dikosongkan — reset dan lanjut
+      if (isOptional && !team_name) {
+        _data.teams[teamIndex] = { name: '', logo_file: null, captain_name: '', captain_wa: '', players: [] };
+        return true;
+      }
+
       const captain_name = form.captain_name.value;
       const captain_wa = form.captain_wa.value;
       const logo_file = form.logo_file.files[0];
+
+      if (!captain_name || !captain_wa) {
+        alert(`Tim ${teamIndex + 1}: Nama kapten dan WhatsApp kapten wajib diisi.`);
+        return false;
+      }
+      if (!logo_file && !_data.teams[teamIndex].logo_file) {
+        alert(`Tim ${teamIndex + 1}: Logo tim wajib diunggah.`);
+        return false;
+      }
 
       const players = [];
       document.querySelectorAll(`#regForm${step} .player-input`).forEach(input => {
@@ -318,11 +418,30 @@
 
       _data.teams[teamIndex] = {
         name: team_name,
-        logo_file: logo_file,
+        logo_file: logo_file || _data.teams[teamIndex].logo_file,
         captain_name: captain_name,
         captain_wa: captain_wa,
         players: validPlayers
       };
+      return true;
+    } else if (step === 5) {
+      const form = document.getElementById('regForm5');
+      if (!form) return;
+      if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+      }
+      const proof = form.payment_proof_file.files[0];
+      if (!proof) {
+        alert('Bukti pembayaran wajib diunggah.');
+        return false;
+      }
+      if (proof.size > 10 * 1024 * 1024) {
+        const err = form.querySelector('.file-error');
+        if (err) { err.textContent = 'File terlalu besar (maks 10MB)'; err.style.display = 'block'; }
+        return false;
+      }
+      _data.payment_proof_file = proof;
       return true;
     }
     return true;
@@ -343,9 +462,9 @@
   }
 
   async function submitForm() {
-    const form5 = document.getElementById('regForm5');
-    if (!form5.checkValidity()) {
-      form5.reportValidity();
+    const form6 = document.getElementById('regForm6');
+    if (!form6.checkValidity()) {
+      form6.reportValidity();
       return;
     }
 
@@ -366,17 +485,22 @@
     }
 
     try {
-      const [berkas, ...logos] = await Promise.all([
+      const activeTeams = _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
+
+      const [berkas, paymentProof, ...logos] = await Promise.all([
         fileToBase64(_data.berkas_file),
-        ..._data.teams.map(t => fileToBase64(t.logo_file))
+        fileToBase64(_data.payment_proof_file),
+        ...activeTeams.map(tm => fileToBase64(tm.logo_file))
       ]);
 
       const payload = {
-        company:   _data.company,
-        pic_name:  _data.pic_name,
-        pic_wa:    _data.pic_wa,
+        company:       _data.company,
+        pic_name:      _data.pic_name,
+        pic_wa:        _data.pic_wa,
         berkas,
-        teams: _data.teams.map((team, i) => ({
+        payment_proof: paymentProof,
+        total_fee:     activeTeams.length * TEAM_FEE,
+        teams: activeTeams.map((team, i) => ({
           name:         team.name,
           captain_name: team.captain_name,
           captain_wa:   team.captain_wa,
@@ -391,8 +515,6 @@
         body: JSON.stringify(payload)
       });
 
-      // GAS selalu redirect — anggap sukses jika request tidak throw
-      // cek JSON jika bisa, tapi jangan blokir sukses jika response-nya HTML
       const text = await resp.text();
       let result = { ok: true };
       try { result = JSON.parse(text); } catch { /* response bukan JSON, asumsikan sukses */ }
@@ -427,12 +549,13 @@
       if (_step === 1) return stepHtml1(_members);
       if (_step >= 2 && _step <= 4) return stepHtmlTeam(_step - 2);
       if (_step === 5) return stepHtml5();
+      if (_step === 6) return stepHtml6();
       return '';
     },
 
     nextStep() {
       if (!collectStep(_step)) return;
-      if (_step < 5) {
+      if (_step < 6) {
         _step++;
         const root = document.getElementById('app-root');
         if (root) {

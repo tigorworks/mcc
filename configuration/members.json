@@ -1,5 +1,17 @@
 [
   {
+    "id": "bca",
+    "abbr": "BCA",
+    "name": "PT Bank Central Asia Tbk.",
+    "industry": { "id": "Perbankan & Keuangan", "en": "Banking & Finance" },
+    "teams": 1,
+    "city": "Jakarta",
+    "logo": "assets/images/logo/bca.png",
+    "club": null,
+    "lead": null,
+    "hasClub": false
+  },
+  {
     "id": "ojk",
     "abbr": "OJK",
     "name": "Otoritas Jasa Keuangan",

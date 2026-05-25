@@ -2,7 +2,7 @@
   window.MCC = window.MCC || {};
   window.MCC.pages = window.MCC.pages || {};
 
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhiIknftid-dgD0-FE7er3Ic0NtMFfC92PpE0BV1IVmlsr5HBZgoB4BJn7BwTsYNQo/exec';
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyRDrKnW8o3RTEhWAxYt5lY_a1GbF1G6yahyLEsywK0rSkzLbYjZ81XPMTUsf1cGs_P/exec';
   const TEAM_FEE = 500000; // Biaya pendaftaran per tim (Rupiah) 
 
   let _members = null;

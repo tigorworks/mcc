@@ -336,30 +336,66 @@
       return 'Rp ' + Number(n).toLocaleString('id-ID');
     }
 
-    /* ── Generate invoice HTML ──────────────── */
-    function generateInvoiceHtml(tm) {
-      const teamName  = tm.name || tm.team_name || tm.nama_tim || '—';
-      const company   = tm.company || tm.perusahaan || tm.company_name || '—';
-      const captain   = tm.captain || tm.captain_name || tm.kapten || '—';
-      const captainWa = tm.captain_wa || '—';
-      const picName   = tm.pic_name  || tm.pic || '—';
-      const picWa     = tm.pic_wa    || '—';
-      const players   = Array.isArray(tm.players) ? tm.players : [];
-      const playerCount = players.length || tm.total_players || tm.jumlah_pemain || '—';
+    /* ── Generate invoice HTML (per registrasi / per perusahaan) ── */
+    function generateInvoiceHtml(teams) {
+      const first   = teams[0];
+      const company = first.company || first.perusahaan || first.company_name || '—';
+      const picName = first.pic_name || first.pic || '—';
+      const picWa   = first.pic_wa   || '—';
+      const total   = teams.length * TEAM_FEE;
 
-      const now    = new Date();
-      const invNo  = 'MCC-' + now.getTime();
+      const now     = new Date();
+      const invNo   = 'MCC-' + now.getTime();
       const invDate = now.toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
 
-      const playerRows = players.length
-        ? players.map((p, j) => `
-          <tr>
-            <td style="padding:5px 10px;border:1px solid #ddd">${j + 1}</td>
-            <td style="padding:5px 10px;border:1px solid #ddd">${p.name || '—'}</td>
-            <td style="padding:5px 10px;border:1px solid #ddd">${p.game_id || '—'}</td>
-            <td style="padding:5px 10px;border:1px solid #ddd">${p.game_nick || '—'}</td>
-          </tr>`).join('')
-        : `<tr><td colspan="4" style="padding:10px;border:1px solid #ddd;color:#999;text-align:center">Data roster tidak tersedia</td></tr>`;
+      /* Baris tabel rincian pembayaran */
+      const teamRows = teams.map((tm, i) => {
+        const tName   = tm.name || tm.team_name || tm.nama_tim || '—';
+        const captain = tm.captain || tm.captain_name || tm.kapten || '—';
+        const pCount  = (Array.isArray(tm.players) ? tm.players.length : 0)
+                        || tm.total_players || tm.jumlah_pemain || '—';
+        return `
+        <tr>
+          <td style="padding:8px 12px;border:1px solid #ddd">${i + 1}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd">${tName}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd">${captain}</td>
+          <td style="padding:8px 12px;border:1px solid #ddd">${pCount} pemain</td>
+          <td style="padding:8px 12px;border:1px solid #ddd;text-align:right">${formatRupiah(TEAM_FEE)}</td>
+        </tr>`;
+      }).join('');
+
+      /* Seksi roster per tim */
+      const rosterSections = teams.map((tm, i) => {
+        const tName   = tm.name || tm.team_name || tm.nama_tim || '—';
+        const players = Array.isArray(tm.players) ? tm.players : [];
+        const playerRows = players.length
+          ? players.map((p, j) => `
+            <tr>
+              <td style="padding:5px 10px;border:1px solid #ddd">${j + 1}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.name || '—'}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.game_id || '—'}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.game_nick || '—'}</td>
+            </tr>`).join('')
+          : `<tr><td colspan="4" style="padding:10px;border:1px solid #ddd;color:#999;text-align:center">Data roster tidak tersedia</td></tr>`;
+
+        return `
+        <div style="margin-bottom:24px">
+          <p style="font-weight:700;font-size:14px;margin:0 0 8px 0;color:#1a1a2e">
+            Tim ${i + 1}: ${tName}
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th style="width:36px">#</th>
+                <th>Nama Pemain</th>
+                <th>Game ID</th>
+                <th>Nickname</th>
+              </tr>
+            </thead>
+            <tbody>${playerRows}</tbody>
+          </table>
+        </div>`;
+      }).join('');
 
       const picSection = (picName !== '—' || picWa !== '—') ? `
         <div class="info-row"><span class="info-lbl">PIC / Manager</span><span class="info-val">${picName}</span></div>
@@ -369,7 +405,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Invoice — ${teamName} — MCC Season 1</title>
+  <title>Invoice — ${company} — MCC Season 1</title>
   <style>
     body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; margin: 0; padding: 32px; background: #fff; }
     @media print {
@@ -422,9 +458,7 @@
   <div class="section-title">Data Pendaftar</div>
   <div class="info-grid">
     <div class="info-row"><span class="info-lbl">Perusahaan</span><span class="info-val">${company}</span></div>
-    <div class="info-row"><span class="info-lbl">Nama Tim</span><span class="info-val">${teamName}</span></div>
-    <div class="info-row"><span class="info-lbl">Kapten</span><span class="info-val">${captain}</span></div>
-    <div class="info-row"><span class="info-lbl">WhatsApp Kapten</span><span class="info-val">${captainWa}</span></div>
+    <div class="info-row"><span class="info-lbl">Jumlah Tim</span><span class="info-val">${teams.length} tim</span></div>
     ${picSection}
   </div>
 
@@ -440,32 +474,18 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td style="padding:8px 12px;border:1px solid #ddd">1</td>
-        <td style="padding:8px 12px;border:1px solid #ddd">${teamName}</td>
-        <td style="padding:8px 12px;border:1px solid #ddd">${captain}</td>
-        <td style="padding:8px 12px;border:1px solid #ddd">${playerCount} pemain</td>
-        <td style="padding:8px 12px;border:1px solid #ddd;text-align:right">${formatRupiah(TEAM_FEE)}</td>
-      </tr>
+      ${teamRows}
       <tr class="total-row">
-        <td colspan="4" style="padding:10px 12px;border:1px solid #ddd;text-align:right">Total Pembayaran</td>
-        <td style="padding:10px 12px;border:1px solid #ddd;text-align:right;color:#e60026">${formatRupiah(TEAM_FEE)}</td>
+        <td colspan="4" style="padding:10px 12px;border:1px solid #ddd;text-align:right">
+          Total Pembayaran (${teams.length} tim × ${formatRupiah(TEAM_FEE)})
+        </td>
+        <td style="padding:10px 12px;border:1px solid #ddd;text-align:right;color:#e60026">${formatRupiah(total)}</td>
       </tr>
     </tbody>
   </table>
 
   <div class="section-title">Roster Pemain</div>
-  <table>
-    <thead>
-      <tr>
-        <th style="width:36px">#</th>
-        <th>Nama Pemain</th>
-        <th>Game ID</th>
-        <th>Nickname</th>
-      </tr>
-    </thead>
-    <tbody>${playerRows}</tbody>
-  </table>
+  ${rosterSections}
 
   <div class="footer-note">
     <strong>Catatan:</strong> Invoice ini merupakan bukti pendaftaran tim MCC Season 1.
@@ -478,18 +498,26 @@
 </html>`;
     }
 
-    /* ── Download invoice ───────────────────── */
+    /* ── Download invoice (per registrasi = per perusahaan) ──── */
     function downloadInvoice(idx) {
-      const tm  = _allTeams[idx];
+      const tm = _allTeams[idx];
       if (!tm) return;
-      const html = generateInvoiceHtml(tm);
+
+      /* Kumpulkan semua tim dari perusahaan yang sama */
+      const company   = tm.company || tm.perusahaan || tm.company_name || '';
+      const sameGroup = _allTeams.filter(t =>
+        (t.company || t.perusahaan || t.company_name || '') === company
+      );
+      const teams = sameGroup.length ? sameGroup : [tm];
+
+      const html = generateInvoiceHtml(teams);
       const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
       const url  = URL.createObjectURL(blob);
       const win  = window.open(url, '_blank');
       if (!win) {
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'invoice-mcc-' + (tm.name || 'tim').replace(/\s+/g, '-').toLowerCase() + '.html';
+        a.download = 'invoice-mcc-' + company.replace(/\s+/g, '-').toLowerCase() + '.html';
         a.click();
       }
       setTimeout(() => URL.revokeObjectURL(url), 60000);

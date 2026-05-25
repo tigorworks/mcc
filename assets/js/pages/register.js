@@ -7,6 +7,7 @@
 
   let _members = null;
   let _step = 1;
+  let _submittedAt = null;
   let _data = {
     company: '',
     pic_name: '',
@@ -346,8 +347,150 @@
       <p style="color:var(--text-dim);margin-bottom:2rem" data-i18n="register.success.desc">
         Terima kasih telah mendaftarkan tim Anda. Panitia MCC Season 1 akan segera menghubungi Anda untuk verifikasi data.
       </p>
-      <a href="#home" class="btn btn-primary" data-i18n="register.success.back">Kembali ke Beranda</a>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <button type="button" class="btn btn-outline" onclick="window.MCC.pages.register.downloadInvoice()" style="display:inline-flex;align-items:center;gap:0.5rem">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Download Invoice
+        </button>
+        <a href="#home" class="btn btn-primary" data-i18n="register.success.back">Kembali ke Beranda</a>
+      </div>
     </div>`;
+  }
+
+  function generateInvoiceHtml() {
+    const activeTeams = _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
+    const total = activeTeams.length * TEAM_FEE;
+    const invDate = _submittedAt ? _submittedAt.toLocaleString('id-ID', { dateStyle:'long', timeStyle:'short' }) : new Date().toLocaleString('id-ID', { dateStyle:'long', timeStyle:'short' });
+    const invNo  = 'MCC-' + (_submittedAt || new Date()).getTime();
+
+    const teamsRows = activeTeams.map((team, i) => `
+      <tr>
+        <td style="padding:8px 12px;border:1px solid #ddd">${i + 1}</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${team.name}</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${team.captain_name}</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${team.players.length} pemain</td>
+        <td style="padding:8px 12px;border:1px solid #ddd;text-align:right">${formatRupiah(TEAM_FEE)}</td>
+      </tr>`).join('');
+
+    const playerSections = activeTeams.map((team, i) => `
+      <div style="margin-bottom:20px">
+        <p style="font-weight:600;margin:0 0 6px 0">Tim ${i+1}: ${team.name}</p>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead>
+            <tr style="background:#f5f5f5">
+              <th style="padding:6px 10px;border:1px solid #ddd;text-align:left">#</th>
+              <th style="padding:6px 10px;border:1px solid #ddd;text-align:left">Nama Pemain</th>
+              <th style="padding:6px 10px;border:1px solid #ddd;text-align:left">Game ID</th>
+              <th style="padding:6px 10px;border:1px solid #ddd;text-align:left">Nickname</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${team.players.map((p, j) => `
+            <tr>
+              <td style="padding:5px 10px;border:1px solid #ddd">${j+1}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.name}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.game_id}</td>
+              <td style="padding:5px 10px;border:1px solid #ddd">${p.game_nick}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`).join('');
+
+    return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice Pendaftaran MCC — ${invNo}</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; margin: 0; padding: 32px; background: #fff; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+      @page { margin: 20mm; }
+    }
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 3px solid #e60026; padding-bottom: 20px; }
+    .inv-logo { display: flex; align-items: center; gap: 12px; }
+    .inv-logo img { height: 48px; }
+    .inv-logo-text h1 { margin: 0; font-size: 20px; color: #e60026; letter-spacing: 1px; }
+    .inv-logo-text p { margin: 2px 0 0; font-size: 11px; color: #666; }
+    .inv-meta { text-align: right; }
+    .inv-meta .inv-title { font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .inv-meta p { margin: 2px 0; font-size: 13px; color: #555; }
+    .inv-meta span { font-weight: 600; color: #1a1a2e; }
+    .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #e60026; margin: 24px 0 8px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 13px; }
+    .info-row { display: flex; gap: 8px; padding: 4px 0; }
+    .info-lbl { color: #666; min-width: 130px; }
+    .info-val { font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #e60026; color: #fff; }
+    th { padding: 10px 12px; text-align: left; font-weight: 600; }
+    .total-row { background: #fef2f4; }
+    .total-row td { font-weight: 700; font-size: 15px; }
+    .footer-note { margin-top: 32px; padding: 16px; background: #f9f9f9; border-left: 4px solid #e60026; font-size: 12px; color: #555; border-radius: 4px; }
+    .print-btn { margin: 24px auto 0; display: block; padding: 12px 32px; background: #e60026; color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; }
+    .print-btn:hover { background: #b0001e; }
+  </style>
+</head>
+<body>
+  <div class="inv-header">
+    <div class="inv-logo">
+      <img src="https://tigorworks.github.io/mcc/assets/images/mcc.png" alt="MCC Logo" />
+      <div class="inv-logo-text">
+        <h1>MCC</h1>
+        <p>Mobile Legends Corporate Championship</p>
+      </div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-title">INVOICE</div>
+      <p>No. Invoice: <span>${invNo}</span></p>
+      <p>Tanggal: <span>${invDate}</span></p>
+      <p>Status: <span style="color:#16a34a">✓ Terdaftar</span></p>
+    </div>
+  </div>
+
+  <div class="section-title">Data Pendaftar</div>
+  <div class="info-grid">
+    <div class="info-row"><span class="info-lbl">Perusahaan</span><span class="info-val">${_data.company}</span></div>
+    <div class="info-row"><span class="info-lbl">PIC / Manager</span><span class="info-val">${_data.pic_name}</span></div>
+    <div class="info-row"><span class="info-lbl">WhatsApp PIC</span><span class="info-val">${_data.pic_wa}</span></div>
+    <div class="info-row"><span class="info-lbl">Jumlah Tim</span><span class="info-val">${activeTeams.length} tim</span></div>
+  </div>
+
+  <div class="section-title">Rincian Pembayaran</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px">#</th>
+        <th>Nama Tim</th>
+        <th>Kapten</th>
+        <th>Roster</th>
+        <th style="text-align:right">Biaya</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${teamsRows}
+      <tr class="total-row">
+        <td colspan="4" style="padding:10px 12px;border:1px solid #ddd;text-align:right">Total Pembayaran</td>
+        <td style="padding:10px 12px;border:1px solid #ddd;text-align:right;color:#e60026">${formatRupiah(total)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">Roster Pemain</div>
+  ${playerSections}
+
+  <div class="footer-note">
+    <strong>Catatan:</strong> Invoice ini merupakan bukti pendaftaran tim MCC Season 1. Panitia akan menghubungi Anda melalui WhatsApp PIC untuk konfirmasi dan verifikasi data. Harap simpan dokumen ini sebagai referensi.
+  </div>
+
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</body>
+</html>`;
   }
 
   function collectStep(step) {
@@ -478,6 +621,7 @@
 
     if (!SCRIPT_URL) {
       setTimeout(() => {
+        _submittedAt = new Date();
         const root = document.getElementById('app-root');
         if (root) { root.innerHTML = successHtml(); window.MCC.i18n?.apply(); }
       }, 500);
@@ -520,6 +664,7 @@
       try { result = JSON.parse(text); } catch { /* response bukan JSON, asumsikan sukses */ }
       if (result.ok === false) throw new Error(result.error || 'Gagal menyimpan data.');
 
+      _submittedAt = new Date();
       const root = document.getElementById('app-root');
       if (root) { root.innerHTML = successHtml(); window.MCC.i18n?.apply(); }
     } catch (err) {
@@ -614,6 +759,21 @@
 
     submit() {
       submitForm();
+    },
+
+    downloadInvoice() {
+      const html = generateInvoiceHtml();
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const win  = window.open(url, '_blank');
+      if (!win) {
+        // fallback: link download langsung
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'invoice-mcc-' + (_submittedAt || new Date()).getTime() + '.html';
+        a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
     },
 
     init() {

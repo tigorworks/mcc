@@ -254,7 +254,7 @@
     <img src="assets/images/mcc.png" alt="MCC Logo" />
     <div class="dbd-header-text">
       <h1>Dashboard Data Tim</h1>
-      <p>MCC Season 1 — Data langsung dari Google Sheet</p>
+      <p>MCC Season 1 — Data tim yang telah terdaftar</p>
     </div>
   </header>
 
@@ -294,7 +294,7 @@
     <div class="table-wrap" id="tableWrap">
       <div class="state-box" id="stateBox">
         <div class="spinner"></div>
-        <span class="state-msg">Memuat data dari Google Sheet...</span>
+        <span class="state-msg">Memuat data tim...</span>
       </div>
     </div>
 
@@ -307,27 +307,23 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec';
-
     let _allTeams = [];
 
-    /* ── Fetch data from GAS ────────────────── */
+    /* ── Fetch data dari teams.json ─────────── */
     async function loadData() {
       showLoading();
       try {
-        const url = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
-        const resp = await fetch(url, { redirect: 'follow' });
-        const text = await resp.text();
-        let json;
-        try { json = JSON.parse(text); }
-        catch { throw new Error('Response bukan JSON yang valid.'); }
+        const resp = await fetch('configuration/teams.json?t=' + Date.now(), { cache: 'no-store' });
+        if (!resp.ok) throw new Error('File tidak ditemukan (HTTP ' + resp.status + ')');
+        const data = await resp.json();
+        if (!Array.isArray(data)) throw new Error('Format data tidak dikenali.');
 
-        if (!json.ok && json.ok !== undefined) throw new Error(json.error || 'Gagal memuat data.');
+        // Normalise: teams.json pakai field "roster", jadikan "players"
+        _allTeams = data.map(tm => ({
+          ...tm,
+          players: tm.roster || tm.players || []
+        }));
 
-        const teams = json.teams || json.data || json;
-        if (!Array.isArray(teams)) throw new Error('Format data tidak dikenali.');
-
-        _allTeams = teams;
         renderTable(_allTeams);
         updateStats(_allTeams);
         document.getElementById('statRow').style.display   = '';
@@ -408,7 +404,7 @@
       document.getElementById('tableWrap').innerHTML = `
         <div class="state-box">
           <div class="spinner"></div>
-          <span class="state-msg">Memuat data dari Google Sheet...</span>
+          <span class="state-msg">Memuat data tim...</span>
         </div>`;
     }
 

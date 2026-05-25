@@ -307,34 +307,57 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec';
+    const SCRIPT_URL  = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec';
+    const FALLBACK_URL = 'configuration/teams.json';
 
     let _allTeams = [];
+    let _source   = '';
 
-    /* ── Fetch data dari GAS sheet ──────────── */
+    /* ── Fetch data: coba GAS dulu, fallback ke teams.json ── */
     async function loadData() {
       showLoading();
+
+      // 1. Coba GAS
       try {
         const url  = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
         const resp = await fetch(url, { redirect: 'follow' });
         if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const json = await resp.json();
-        if (!json.ok) throw new Error(json.error || 'Gagal memuat data.');
-        if (!Array.isArray(json.teams)) throw new Error('Format data tidak dikenali.');
-
-        _allTeams = json.teams;
-        renderTable(_allTeams);
-        updateStats(_allTeams);
-        document.getElementById('statRow').style.display   = '';
-        document.getElementById('filterBar').style.display = '';
-        document.getElementById('dbdFooter').style.display = '';
-        document.getElementById('lastUpdated').textContent =
-          'Diperbarui: ' + new Date().toLocaleString('id-ID');
-
-      } catch (err) {
-        console.error('[dbd] fetch error', err);
-        showError(err.message);
+        const text = await resp.text();
+        const json = JSON.parse(text);
+        if (Array.isArray(json.teams)) {
+          _source   = 'Google Sheet (live)';
+          _allTeams = json.teams;
+          showData();
+          return;
+        }
+        throw new Error('GAS response tidak mengandung teams[]');
+      } catch (gasErr) {
+        console.warn('[dbd] GAS gagal, fallback ke teams.json —', gasErr.message);
       }
+
+      // 2. Fallback: baca teams.json lokal
+      try {
+        const resp = await fetch(FALLBACK_URL + '?t=' + Date.now(), { cache: 'no-store' });
+        if (!resp.ok) throw new Error('teams.json HTTP ' + resp.status);
+        const data = await resp.json();
+        if (!Array.isArray(data)) throw new Error('teams.json format tidak dikenali');
+        _source   = 'Data lokal (teams.json)';
+        _allTeams = data.map(tm => ({ ...tm, players: tm.roster || tm.players || [] }));
+        showData();
+      } catch (fbErr) {
+        console.error('[dbd] fallback juga gagal —', fbErr.message);
+        showError('Gagal memuat data dari semua sumber.<br><small>' + esc(fbErr.message) + '</small>');
+      }
+    }
+
+    function showData() {
+      renderTable(_allTeams);
+      updateStats(_allTeams);
+      document.getElementById('statRow').style.display   = '';
+      document.getElementById('filterBar').style.display = '';
+      document.getElementById('dbdFooter').style.display = '';
+      document.getElementById('lastUpdated').textContent =
+        'Sumber: ' + _source + ' — ' + new Date().toLocaleString('id-ID');
     }
 
     /* ── Render table ───────────────────────── */

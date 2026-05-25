@@ -8,6 +8,7 @@
   let _members = null;
   let _step = 1;
   let _submittedAt = null;
+  let _submittedRow = null;
   let _data = {
     company: '',
     pic_name: '',
@@ -26,6 +27,15 @@
 
   function formatRupiah(amount) {
     return 'Rp ' + amount.toLocaleString('id-ID');
+  }
+
+  function formatInvNo(date, rowNum) {
+    const d  = date || new Date();
+    const y  = d.getFullYear();
+    const m  = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    const n  = String(rowNum || 1).padStart(5, '0');
+    return `MCC-${y}${m}${dd}${n}`;
   }
 
   function registeredTeams() {
@@ -364,8 +374,9 @@
   function generateInvoiceHtml() {
     const activeTeams = _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
     const total = activeTeams.length * TEAM_FEE;
-    const invDate = _submittedAt ? _submittedAt.toLocaleString('id-ID', { dateStyle:'long', timeStyle:'short' }) : new Date().toLocaleString('id-ID', { dateStyle:'long', timeStyle:'short' });
-    const invNo  = 'MCC-' + (_submittedAt || new Date()).getTime();
+    const dt     = _submittedAt || new Date();
+    const invDate = dt.toLocaleString('id-ID', { dateStyle:'long', timeStyle:'short' });
+    const invNo   = formatInvNo(dt, _submittedRow);
 
     const teamsRows = activeTeams.map((team, i) => `
       <tr>
@@ -664,7 +675,8 @@
       try { result = JSON.parse(text); } catch { /* response bukan JSON, asumsikan sukses */ }
       if (result.ok === false) throw new Error(result.error || 'Gagal menyimpan data.');
 
-      _submittedAt = new Date();
+      _submittedAt  = new Date();
+      _submittedRow = result.row || result.row_number || null;
       const root = document.getElementById('app-root');
       if (root) { root.innerHTML = successHtml(); window.MCC.i18n?.apply(); }
     } catch (err) {

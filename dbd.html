@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DBD — Data Tim MCC Season 1</title>
+  <link rel="icon" href="assets/images/mcc.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Base ─────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:        #e60026;
+      --red-dark:   #b0001e;
+      --bg:         #07091a;
+      --bg-2:       #0b0f22;
+      --bg-3:       #111528;
+      --bg-card:    rgba(14,18,40,0.90);
+      --border:     rgba(255,255,255,0.10);
+      --text:       #dde1ee;
+      --text-dim:   #8896b2;
+      --white:      #ffffff;
+      --font-head:  'Rajdhani', sans-serif;
+      --font-body:  'Inter', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 15px;
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ──────────────────────────────── */
+    .dbd-header {
+      background: var(--bg-2);
+      border-bottom: 1px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .dbd-header img { height: 36px; width: auto; }
+    .dbd-header-text h1 {
+      font-family: var(--font-head);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+    }
+    .dbd-header-text p {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-top: 0.1rem;
+    }
+
+    /* ── Main container ──────────────────────── */
+    .dbd-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── Stats row ───────────────────────────── */
+    .stat-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      flex: 1;
+      min-width: 140px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.4rem;
+    }
+    .stat-card .stat-val {
+      font-family: var(--font-head);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--red);
+      line-height: 1;
+    }
+    .stat-card .stat-lbl {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      margin-top: 0.3rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── Filter bar ──────────────────────────── */
+    .dbd-filter {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .dbd-search {
+      flex: 1;
+      min-width: 200px;
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .dbd-search:focus { border-color: var(--red); }
+    .dbd-search::placeholder { color: var(--text-dim); }
+
+    .dbd-refresh {
+      background: var(--bg-3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.55rem 1rem;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .dbd-refresh:hover { border-color: var(--red); color: var(--text); }
+    .dbd-refresh svg { width: 14px; height: 14px; }
+
+    /* ── Table ───────────────────────────────── */
+    .table-wrap {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead { background: rgba(255,255,255,0.04); }
+    th {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      font-family: var(--font-head);
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    td {
+      padding: 0.8rem 1rem;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    .td-num {
+      color: var(--text-dim);
+      font-size: 0.82rem;
+      width: 3rem;
+      text-align: center;
+    }
+    .td-team { font-weight: 600; color: var(--white); }
+    .td-company { color: var(--text); }
+    .td-captain { color: var(--text-dim); font-size: 0.85rem; }
+    .td-players {
+      text-align: center;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+    .badge-company {
+      display: inline-block;
+      background: rgba(230,0,38,0.12);
+      border: 1px solid rgba(230,0,38,0.25);
+      color: #ff6680;
+      font-size: 0.75rem;
+      border-radius: 6px;
+      padding: 0.15rem 0.55rem;
+      font-weight: 500;
+    }
+
+    /* ── States ──────────────────────────────── */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 4rem 2rem;
+      color: var(--text-dim);
+      gap: 1rem;
+      text-align: center;
+    }
+    .state-box .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .state-box .state-icon { font-size: 2.5rem; }
+    .state-box .state-msg { font-size: 0.95rem; }
+    .state-box .state-sub { font-size: 0.82rem; color: var(--text-dim); opacity: 0.7; }
+    .retry-btn {
+      margin-top: 0.5rem;
+      background: var(--red);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 0.55rem 1.25rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+    .retry-btn:hover { background: var(--red-dark); }
+
+    /* ── Footer ──────────────────────────────── */
+    .dbd-footer {
+      margin-top: 1.5rem;
+      font-size: 0.78rem;
+      color: var(--text-dim);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    #lastUpdated { color: var(--text-dim); }
+
+    /* ── Responsive ──────────────────────────── */
+    @media (max-width: 640px) {
+      .dbd-header { padding: 1rem; }
+      .dbd-wrap { padding: 1.25rem 1rem 3rem; }
+      .td-captain, .td-players { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="dbd-header">
+    <img src="assets/images/mcc.png" alt="MCC Logo" />
+    <div class="dbd-header-text">
+      <h1>Dashboard Data Tim</h1>
+      <p>MCC Season 1 — Data langsung dari Google Sheet</p>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <div class="dbd-wrap">
+
+    <!-- Stats -->
+    <div class="stat-row" id="statRow" style="display:none">
+      <div class="stat-card">
+        <div class="stat-val" id="statTeams">—</div>
+        <div class="stat-lbl">Total Tim</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statCompanies">—</div>
+        <div class="stat-lbl">Perusahaan</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="statPlayers">—</div>
+        <div class="stat-lbl">Total Pemain</div>
+      </div>
+    </div>
+
+    <!-- Filter -->
+    <div class="dbd-filter" id="filterBar" style="display:none">
+      <input class="dbd-search" type="text" id="searchInput"
+             placeholder="Cari nama tim atau perusahaan..." />
+      <button class="dbd-refresh" onclick="loadData()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <!-- Table container -->
+    <div class="table-wrap" id="tableWrap">
+      <div class="state-box" id="stateBox">
+        <div class="spinner"></div>
+        <span class="state-msg">Memuat data dari Google Sheet...</span>
+      </div>
+    </div>
+
+    <!-- Footer info -->
+    <div class="dbd-footer" id="dbdFooter" style="display:none">
+      <span>Menampilkan <strong id="visibleCount">—</strong> tim</span>
+      <span id="lastUpdated"></span>
+    </div>
+
+  </div>
+
+  <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec';
+
+    let _allTeams = [];
+
+    /* ── Fetch data from GAS ────────────────── */
+    async function loadData() {
+      showLoading();
+      try {
+        const url = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
+        const resp = await fetch(url, { redirect: 'follow' });
+        const text = await resp.text();
+        let json;
+        try { json = JSON.parse(text); }
+        catch { throw new Error('Response bukan JSON yang valid.'); }
+
+        if (!json.ok && json.ok !== undefined) throw new Error(json.error || 'Gagal memuat data.');
+
+        const teams = json.teams || json.data || json;
+        if (!Array.isArray(teams)) throw new Error('Format data tidak dikenali.');
+
+        _allTeams = teams;
+        renderTable(_allTeams);
+        updateStats(_allTeams);
+        document.getElementById('statRow').style.display   = '';
+        document.getElementById('filterBar').style.display = '';
+        document.getElementById('dbdFooter').style.display = '';
+        document.getElementById('lastUpdated').textContent =
+          'Diperbarui: ' + new Date().toLocaleString('id-ID');
+
+      } catch (err) {
+        console.error('[dbd] fetch error', err);
+        showError(err.message);
+      }
+    }
+
+    /* ── Render table ───────────────────────── */
+    function renderTable(teams) {
+      const wrap = document.getElementById('tableWrap');
+      if (!teams.length) {
+        wrap.innerHTML = `<div class="state-box">
+          <span class="state-icon">📭</span>
+          <span class="state-msg">Tidak ada tim ditemukan</span>
+        </div>`;
+        document.getElementById('visibleCount').textContent = 0;
+        return;
+      }
+
+      const rows = teams.map((tm, i) => `
+        <tr>
+          <td class="td-num">${i + 1}</td>
+          <td class="td-team">${esc(tm.name || tm.team_name || tm.nama_tim || '—')}</td>
+          <td class="td-company">
+            <span class="badge-company">${esc(tm.company || tm.perusahaan || tm.company_name || '—')}</span>
+          </td>
+          <td class="td-captain">${esc(tm.captain || tm.captain_name || tm.kapten || '—')}</td>
+          <td class="td-players">${tm.players?.length ?? tm.total_players ?? tm.jumlah_pemain ?? '—'}</td>
+        </tr>`).join('');
+
+      wrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th class="td-num">#</th>
+              <th>Nama Tim</th>
+              <th>Perusahaan</th>
+              <th class="td-captain">Kapten</th>
+              <th class="td-players">Pemain</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+
+      document.getElementById('visibleCount').textContent = teams.length;
+    }
+
+    /* ── Stats ──────────────────────────────── */
+    function updateStats(teams) {
+      document.getElementById('statTeams').textContent = teams.length;
+      const companies = new Set(teams.map(t => t.company || t.perusahaan || t.company_name)).size;
+      document.getElementById('statCompanies').textContent = companies;
+      const players = teams.reduce((sum, t) =>
+        sum + (t.players?.length ?? t.total_players ?? t.jumlah_pemain ?? 0), 0);
+      document.getElementById('statPlayers').textContent = players || '—';
+    }
+
+    /* ── Search filter ──────────────────────── */
+    document.getElementById('searchInput')?.addEventListener('input', function () {
+      const q = this.value.toLowerCase().trim();
+      const filtered = !q ? _allTeams : _allTeams.filter(tm =>
+        (tm.name || tm.team_name || tm.nama_tim || '').toLowerCase().includes(q) ||
+        (tm.company || tm.perusahaan || tm.company_name || '').toLowerCase().includes(q) ||
+        (tm.captain || tm.captain_name || tm.kapten || '').toLowerCase().includes(q)
+      );
+      renderTable(filtered);
+    });
+
+    /* ── State helpers ──────────────────────── */
+    function showLoading() {
+      document.getElementById('tableWrap').innerHTML = `
+        <div class="state-box">
+          <div class="spinner"></div>
+          <span class="state-msg">Memuat data dari Google Sheet...</span>
+        </div>`;
+    }
+
+    function showError(msg) {
+      document.getElementById('tableWrap').innerHTML = `
+        <div class="state-box">
+          <span class="state-icon">⚠️</span>
+          <span class="state-msg">Gagal memuat data</span>
+          <span class="state-sub">${esc(msg)}</span>
+          <button class="retry-btn" onclick="loadData()">Coba Lagi</button>
+        </div>`;
+    }
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    /* ── Init ───────────────────────────────── */
+    loadData();
+  </script>
+</body>
+</html>

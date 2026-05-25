@@ -294,7 +294,7 @@
     <div class="table-wrap" id="tableWrap">
       <div class="state-box" id="stateBox">
         <div class="spinner"></div>
-        <span class="state-msg">Memuat data dari Google Sheet...</span>
+        <span class="state-msg">Memuat data tim...</span>
       </div>
     </div>
 
@@ -311,23 +311,18 @@
 
     let _allTeams = [];
 
-    /* ── Fetch data from GAS ────────────────── */
+    /* ── Fetch data dari GAS sheet ──────────── */
     async function loadData() {
       showLoading();
       try {
-        const url = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
+        const url  = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
         const resp = await fetch(url, { redirect: 'follow' });
-        const text = await resp.text();
-        let json;
-        try { json = JSON.parse(text); }
-        catch { throw new Error('Response bukan JSON yang valid.'); }
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const json = await resp.json();
+        if (!json.ok) throw new Error(json.error || 'Gagal memuat data.');
+        if (!Array.isArray(json.teams)) throw new Error('Format data tidak dikenali.');
 
-        if (!json.ok && json.ok !== undefined) throw new Error(json.error || 'Gagal memuat data.');
-
-        const teams = json.teams || json.data || json;
-        if (!Array.isArray(teams)) throw new Error('Format data tidak dikenali.');
-
-        _allTeams = teams;
+        _allTeams = json.teams;
         renderTable(_allTeams);
         updateStats(_allTeams);
         document.getElementById('statRow').style.display   = '';
@@ -408,7 +403,7 @@
       document.getElementById('tableWrap').innerHTML = `
         <div class="state-box">
           <div class="spinner"></div>
-          <span class="state-msg">Memuat data dari Google Sheet...</span>
+          <span class="state-msg">Memuat data tim...</span>
         </div>`;
     }
 

@@ -326,7 +326,7 @@
   </div>
 
   <script>
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwD8YJxC51yJOeag3fGUSoxM9JnQTtJvzIdPsjBA8RFU9KasfPYPkxclwevxht2jZYI/exec';
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUJr2hGrd4cNWUR29LwiiODoB5so0KHI2qJCZDDeyKznt5dDEX87O9kPX6HLEFDY0f/exec';
     const TEAM_FEE  = 500000;
 
     let _allTeams = [];
@@ -334,6 +334,16 @@
     /* ── Rupiah formatter ───────────────────── */
     function formatRupiah(n) {
       return 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    /* ── Invoice number formatter ───────────── */
+    function formatInvNo(date, rowNum) {
+      const d  = date || new Date();
+      const y  = d.getFullYear();
+      const m  = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const n  = String(rowNum || 1).padStart(5, '0');
+      return `MCC-${y}${m}${dd}${n}`;
     }
 
     /* ── Generate invoice HTML (per registrasi / per perusahaan) ── */
@@ -345,7 +355,8 @@
       const total   = teams.length * TEAM_FEE;
 
       const now     = new Date();
-      const invNo   = 'MCC-' + now.getTime();
+      const rowNum  = first.row_number || first.row || (_allTeams.indexOf(first) + 2);
+      const invNo   = formatInvNo(now, rowNum);
       const invDate = now.toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
 
       /* Baris tabel rincian pembayaran */

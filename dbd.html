@@ -180,6 +180,24 @@
       font-size: 0.82rem;
       color: var(--text-dim);
     }
+    .td-invoice {
+      text-align: center;
+      width: 3.5rem;
+    }
+    .btn-inv {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.35rem 0.55rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-inv:hover { border-color: var(--red); color: var(--red); }
+    .btn-inv svg { width: 14px; height: 14px; }
     .badge-company {
       display: inline-block;
       background: rgba(230,0,38,0.12);
@@ -244,6 +262,7 @@
       .dbd-header { padding: 1rem; }
       .dbd-wrap { padding: 1.25rem 1rem 3rem; }
       .td-captain, .td-players { display: none; }
+      .btn-inv-lbl { display: none; }
     }
   </style>
 </head>
@@ -308,8 +327,173 @@
 
   <script>
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwD8YJxC51yJOeag3fGUSoxM9JnQTtJvzIdPsjBA8RFU9KasfPYPkxclwevxht2jZYI/exec';
+    const TEAM_FEE  = 500000;
 
     let _allTeams = [];
+
+    /* ── Rupiah formatter ───────────────────── */
+    function formatRupiah(n) {
+      return 'Rp ' + Number(n).toLocaleString('id-ID');
+    }
+
+    /* ── Generate invoice HTML ──────────────── */
+    function generateInvoiceHtml(tm) {
+      const teamName  = tm.name || tm.team_name || tm.nama_tim || '—';
+      const company   = tm.company || tm.perusahaan || tm.company_name || '—';
+      const captain   = tm.captain || tm.captain_name || tm.kapten || '—';
+      const captainWa = tm.captain_wa || '—';
+      const picName   = tm.pic_name  || tm.pic || '—';
+      const picWa     = tm.pic_wa    || '—';
+      const players   = Array.isArray(tm.players) ? tm.players : [];
+      const playerCount = players.length || tm.total_players || tm.jumlah_pemain || '—';
+
+      const now    = new Date();
+      const invNo  = 'MCC-' + now.getTime();
+      const invDate = now.toLocaleString('id-ID', { dateStyle: 'long', timeStyle: 'short' });
+
+      const playerRows = players.length
+        ? players.map((p, j) => `
+          <tr>
+            <td style="padding:5px 10px;border:1px solid #ddd">${j + 1}</td>
+            <td style="padding:5px 10px;border:1px solid #ddd">${p.name || '—'}</td>
+            <td style="padding:5px 10px;border:1px solid #ddd">${p.game_id || '—'}</td>
+            <td style="padding:5px 10px;border:1px solid #ddd">${p.game_nick || '—'}</td>
+          </tr>`).join('')
+        : `<tr><td colspan="4" style="padding:10px;border:1px solid #ddd;color:#999;text-align:center">Data roster tidak tersedia</td></tr>`;
+
+      const picSection = (picName !== '—' || picWa !== '—') ? `
+        <div class="info-row"><span class="info-lbl">PIC / Manager</span><span class="info-val">${picName}</span></div>
+        <div class="info-row"><span class="info-lbl">WhatsApp PIC</span><span class="info-val">${picWa}</span></div>` : '';
+
+      return `<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice — ${teamName} — MCC Season 1</title>
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; color: #1a1a2e; margin: 0; padding: 32px; background: #fff; }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none !important; }
+      @page { margin: 20mm; }
+    }
+    .inv-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; border-bottom: 3px solid #e60026; padding-bottom: 20px; }
+    .inv-logo { display: flex; align-items: center; gap: 12px; }
+    .inv-logo img { height: 48px; }
+    .inv-logo-text h1 { margin: 0; font-size: 20px; color: #e60026; letter-spacing: 1px; }
+    .inv-logo-text p { margin: 2px 0 0; font-size: 11px; color: #666; }
+    .inv-meta { text-align: right; }
+    .inv-meta .inv-title { font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .inv-meta p { margin: 2px 0; font-size: 13px; color: #555; }
+    .inv-meta span { font-weight: 600; color: #1a1a2e; }
+    .section-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #e60026; margin: 24px 0 8px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 13px; }
+    .info-row { display: flex; gap: 8px; padding: 4px 0; }
+    .info-lbl { color: #666; min-width: 140px; }
+    .info-val { font-weight: 600; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #e60026; color: #fff; }
+    th { padding: 10px 12px; text-align: left; font-weight: 600; border: 1px solid #c00; }
+    .total-row { background: #fef2f4; }
+    .total-row td { font-weight: 700; font-size: 15px; }
+    .footer-note { margin-top: 32px; padding: 16px; background: #f9f9f9; border-left: 4px solid #e60026; font-size: 12px; color: #555; border-radius: 4px; }
+    .print-btn { margin: 24px auto 0; display: block; padding: 12px 32px; background: #e60026; color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; }
+    .print-btn:hover { background: #b0001e; }
+  </style>
+</head>
+<body>
+
+  <div class="inv-header">
+    <div class="inv-logo">
+      <img src="https://tigorworks.github.io/mcc/assets/images/mcc.png" alt="MCC Logo" />
+      <div class="inv-logo-text">
+        <h1>MCC</h1>
+        <p>Mobile Legends Corporate Championship</p>
+      </div>
+    </div>
+    <div class="inv-meta">
+      <div class="inv-title">INVOICE</div>
+      <p>No. Invoice: <span>${invNo}</span></p>
+      <p>Tanggal: <span>${invDate}</span></p>
+      <p>Status: <span style="color:#16a34a">✓ Terdaftar</span></p>
+    </div>
+  </div>
+
+  <div class="section-title">Data Pendaftar</div>
+  <div class="info-grid">
+    <div class="info-row"><span class="info-lbl">Perusahaan</span><span class="info-val">${company}</span></div>
+    <div class="info-row"><span class="info-lbl">Nama Tim</span><span class="info-val">${teamName}</span></div>
+    <div class="info-row"><span class="info-lbl">Kapten</span><span class="info-val">${captain}</span></div>
+    <div class="info-row"><span class="info-lbl">WhatsApp Kapten</span><span class="info-val">${captainWa}</span></div>
+    ${picSection}
+  </div>
+
+  <div class="section-title">Rincian Pembayaran</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:40px">#</th>
+        <th>Nama Tim</th>
+        <th>Kapten</th>
+        <th>Jumlah Pemain</th>
+        <th style="text-align:right">Biaya</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px 12px;border:1px solid #ddd">1</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${teamName}</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${captain}</td>
+        <td style="padding:8px 12px;border:1px solid #ddd">${playerCount} pemain</td>
+        <td style="padding:8px 12px;border:1px solid #ddd;text-align:right">${formatRupiah(TEAM_FEE)}</td>
+      </tr>
+      <tr class="total-row">
+        <td colspan="4" style="padding:10px 12px;border:1px solid #ddd;text-align:right">Total Pembayaran</td>
+        <td style="padding:10px 12px;border:1px solid #ddd;text-align:right;color:#e60026">${formatRupiah(TEAM_FEE)}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="section-title">Roster Pemain</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:36px">#</th>
+        <th>Nama Pemain</th>
+        <th>Game ID</th>
+        <th>Nickname</th>
+      </tr>
+    </thead>
+    <tbody>${playerRows}</tbody>
+  </table>
+
+  <div class="footer-note">
+    <strong>Catatan:</strong> Invoice ini merupakan bukti pendaftaran tim MCC Season 1.
+    Panitia akan menghubungi Anda melalui WhatsApp untuk konfirmasi dan verifikasi data.
+    Harap simpan dokumen ini sebagai referensi.
+  </div>
+
+  <button class="print-btn no-print" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+</body>
+</html>`;
+    }
+
+    /* ── Download invoice ───────────────────── */
+    function downloadInvoice(idx) {
+      const tm  = _allTeams[idx];
+      if (!tm) return;
+      const html = generateInvoiceHtml(tm);
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const win  = window.open(url, '_blank');
+      if (!win) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'invoice-mcc-' + (tm.name || 'tim').replace(/\s+/g, '-').toLowerCase() + '.html';
+        a.click();
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    }
 
     /* ── Fetch data dari GAS sheet ──────────── */
     async function loadData() {
@@ -349,7 +533,9 @@
         return;
       }
 
-      const rows = teams.map((tm, i) => `
+      const rows = teams.map((tm, i) => {
+        const allIdx = _allTeams.indexOf(tm);
+        return `
         <tr>
           <td class="td-num">${i + 1}</td>
           <td class="td-team">${esc(tm.name || tm.team_name || tm.nama_tim || '—')}</td>
@@ -358,7 +544,17 @@
           </td>
           <td class="td-captain">${esc(tm.captain || tm.captain_name || tm.kapten || '—')}</td>
           <td class="td-players">${tm.players?.length ?? tm.total_players ?? tm.jumlah_pemain ?? '—'}</td>
-        </tr>`).join('');
+          <td class="td-invoice">
+            <button class="btn-inv" title="Download Invoice" onclick="downloadInvoice(${allIdx})">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
 
       wrap.innerHTML = `
         <table>
@@ -369,6 +565,7 @@
               <th>Perusahaan</th>
               <th class="td-captain">Kapten</th>
               <th class="td-players">Pemain</th>
+              <th class="td-invoice">Invoice</th>
             </tr>
           </thead>
           <tbody>${rows}</tbody>

@@ -254,7 +254,7 @@
     <img src="assets/images/mcc.png" alt="MCC Logo" />
     <div class="dbd-header-text">
       <h1>Dashboard Data Tim</h1>
-      <p>MCC Season 1 — Data tim yang telah terdaftar</p>
+      <p>MCC Season 1 — Data langsung dari Google Sheet</p>
     </div>
   </header>
 
@@ -307,23 +307,22 @@
   </div>
 
   <script>
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6l8ViRtGEwMkSTXaXPYPqrj9K2-iFGJz79BHHwcFio4wacNIGwE2RlI6oieDTP4i1/exec';
+
     let _allTeams = [];
 
-    /* ── Fetch data dari teams.json ─────────── */
+    /* ── Fetch data dari GAS sheet ──────────── */
     async function loadData() {
       showLoading();
       try {
-        const resp = await fetch('configuration/teams.json?t=' + Date.now(), { cache: 'no-store' });
-        if (!resp.ok) throw new Error('File tidak ditemukan (HTTP ' + resp.status + ')');
-        const data = await resp.json();
-        if (!Array.isArray(data)) throw new Error('Format data tidak dikenali.');
+        const url  = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
+        const resp = await fetch(url, { redirect: 'follow' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const json = await resp.json();
+        if (!json.ok) throw new Error(json.error || 'Gagal memuat data.');
+        if (!Array.isArray(json.teams)) throw new Error('Format data tidak dikenali.');
 
-        // Normalise: teams.json pakai field "roster", jadikan "players"
-        _allTeams = data.map(tm => ({
-          ...tm,
-          players: tm.roster || tm.players || []
-        }));
-
+        _allTeams = json.teams;
         renderTable(_allTeams);
         updateStats(_allTeams);
         document.getElementById('statRow').style.display   = '';

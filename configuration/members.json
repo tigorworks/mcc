@@ -178,5 +178,17 @@
     "club": null,
     "lead": null,
     "hasClub": false
+  },
+  {
+    "id": "bsn",
+    "abbr": "BSN",
+    "name": "Bank Syariah Nasional (BSN)",
+    "industry": { "id": "Perbankan Syariah", "en": "Islamic Banking" },
+    "teams": 1,
+    "city": "Jakarta",
+    "logo": "assets/images/logo/bsn.png",
+    "club": null,
+    "lead": null,
+    "hasClub": false
   }
 ]

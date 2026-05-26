@@ -37,12 +37,12 @@
   },
   {
     "id": "danamon",
-    "abbr": "DAN",
-    "name": "PT Bank Danamon Indonesia Tbk",
+    "abbr": "KKD",
+    "name": "Koperasi Karyawan Danamon",
     "industry": { "id": "Perbankan & Keuangan", "en": "Banking & Finance" },
     "teams": 1,
     "city": "Jakarta",
-    "logo": "assets/images/logo/danamon.png",
+    "logo": "assets/images/logo/kkd.jpeg",
     "club": null,
     "lead": "Ozi",
     "hasClub": false

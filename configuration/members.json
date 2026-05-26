@@ -146,7 +146,7 @@
   {
     "id": "pln",
     "abbr": "PLN",
-    "name": "PT PLN UPT Surabaya",
+    "name": "PT PLN (Persero)",
     "industry": { "id": "Energi & Utilitas", "en": "Energy & Utilities" },
     "teams": 1,
     "city": "Surabaya",

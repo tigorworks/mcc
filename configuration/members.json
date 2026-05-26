@@ -166,5 +166,17 @@
     "club": "PRIMA Community",
     "lead": null,
     "hasClub": true
+  },
+  {
+    "id": "bjb",
+    "abbr": "BJB",
+    "name": "PT Bank Pembangunan Daerah Jawa Barat dan Banten, Tbk.",
+    "industry": { "id": "Perbankan & Keuangan", "en": "Banking & Finance" },
+    "teams": 1,
+    "city": "Bandung",
+    "logo": "assets/images/logo/bjb.png",
+    "club": null,
+    "lead": null,
+    "hasClub": false
   }
 ]

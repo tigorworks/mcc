@@ -9,129 +9,54 @@
     '#db2777','#0284c7','#d97706','#059669','#dc2626',
     '#0d47a1','#c2410c','#065f46','#6d28d9','#b45309',
   ];
-  const PER_PAGE = 12;
+  const PER_PAGE = 10;
 
   let _teams    = null;
   let _filtered = [];
+  let _openIdx  = null;   // gunakan idx (array index) — selalu unik
   let _page     = 1;
 
   function t(key) { return window.MCC?.i18n?.t(key) ?? key; }
   function teamColor(idx) { return PALETTE[idx % PALETTE.length]; }
   function totalPages() { return Math.max(1, Math.ceil(_filtered.length / PER_PAGE)); }
 
-  /* ── Render roster rows ──────────────────── */
-  function rosterRows(roster) {
-    return roster.map((p, i) => `
+  /* ── Roster child table ─────────────────── */
+  function rosterHtml(roster) {
+    const rows = roster.map(p => `
       <tr>
-        <td class="tr-num">${i + 1}</td>
-        <td class="tr-name">${p.full_name}</td>
-        <td class="tr-id">${p.game_id}</td>
-        <td class="tr-nick">${p.game_nick}</td>
+        <td class="ct-name">${p.full_name}</td>
+        <td class="ct-gameid">${p.game_id}</td>
+        <td class="ct-nick">${p.game_nick}</td>
       </tr>`).join('');
+    return `<table class="child-table">
+      <thead><tr><th>Nama Lengkap</th><th>Game ID</th><th>Nama IG</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
   }
 
-  /* ── Render one team card ────────────────── */
-  function cardHtml(tm) {
-    const color = teamColor(tm.idx);
-    return `
-    <div class="tm-card" data-idx="${tm.idx}" style="--tc:${color}">
-      <div class="tm-stripe"></div>
-      <div class="tm-body">
-        <div class="tm-company">${tm.company}</div>
-        <div class="tm-name">${tm.name}</div>
-        <div class="tm-meta">
-          <span class="tm-meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-            ${tm.captain}
-          </span>
-          <span class="tm-meta-sep">·</span>
-          <span class="tm-meta-item">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            ${tm.roster.length} pemain
-          </span>
-        </div>
-      </div>
-      <button class="tm-toggle" aria-expanded="false">
-        <span class="tm-toggle-label">Lihat Roster</span>
-        <svg class="tm-toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div class="tm-roster" hidden>
-        <table class="tm-rtable">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Nama Lengkap</th>
-              <th>Game ID</th>
-              <th>Nickname</th>
-            </tr>
-          </thead>
-          <tbody>${rosterRows(tm.roster)}</tbody>
-        </table>
-      </div>
-    </div>`;
-  }
-
-  /* ── Render card grid ────────────────────── */
-  function renderCards() {
-    const grid   = document.getElementById('teamsGrid');
-    const pgWrap = document.getElementById('paginationWrap');
-    const pgInfo = document.getElementById('pgInfo');
-    const cnt    = document.getElementById('resultCount');
-    if (!grid) return;
-
+  /* ── Main table body ────────────────────── */
+  function tableRows(data) {
+    if (!data.length) return `<tr><td colspan="5" class="td-empty">${t('teams.no_result')}</td></tr>`;
     const start = (_page - 1) * PER_PAGE;
-    const slice = _filtered.slice(start, start + PER_PAGE);
-
-    if (!_filtered.length) {
-      grid.innerHTML = `
-        <div class="tm-empty" style="grid-column:1/-1">
-          <div class="tm-empty-icon">🔍</div>
-          <div>${t('teams.no_result')}</div>
-        </div>`;
-    } else {
-      grid.innerHTML = slice.map(tm => cardHtml(tm)).join('');
-      bindCardEvents();
-    }
-
-    if (cnt) cnt.textContent = _filtered.length;
-
-    if (pgInfo) {
-      const s = Math.min(start + 1, _filtered.length);
-      const e = Math.min(start + PER_PAGE, _filtered.length);
-      pgInfo.textContent = _filtered.length ? `${s}–${e} dari ${_filtered.length} tim` : '';
-    }
-    if (pgWrap) pgWrap.innerHTML = paginationHtml();
-    bindPaginationEvents();
+    const slice = data.slice(start, start + PER_PAGE);
+    return slice.map(tm => {
+      const color  = teamColor(tm.idx);
+      const isOpen = _openIdx === tm.idx;
+      return `
+      <tr class="team-row${isOpen ? ' shown' : ''}" data-idx="${tm.idx}" style="--tc:${color}">
+        <td class="td-expand"><span class="expand-icon${isOpen ? ' open' : ''}"></span></td>
+        <td class="td-name">${tm.name}</td>
+        <td class="td-company">${tm.company}</td>
+        <td class="td-captain">${tm.captain}</td>
+        <td class="td-count">${tm.roster.length} <span class="count-label">pemain</span></td>
+      </tr>
+      <tr class="team-detail-row${isOpen ? '' : ' hidden'}" data-for="${tm.idx}">
+        <td colspan="5">${rosterHtml(tm.roster)}</td>
+      </tr>`;
+    }).join('');
   }
 
-  /* ── Bind card toggle events (no re-render) ── */
-  function bindCardEvents() {
-    document.querySelectorAll('.tm-toggle').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.stopPropagation();
-        const card    = btn.closest('.tm-card');
-        const roster  = card.querySelector('.tm-roster');
-        const isOpen  = card.classList.contains('open');
-
-        // Close all others
-        document.querySelectorAll('.tm-card.open').forEach(c => {
-          c.classList.remove('open');
-          c.querySelector('.tm-roster').hidden = true;
-          c.querySelector('.tm-toggle').setAttribute('aria-expanded', 'false');
-          c.querySelector('.tm-toggle-label').textContent = 'Lihat Roster';
-        });
-
-        if (!isOpen) {
-          card.classList.add('open');
-          roster.hidden = false;
-          btn.setAttribute('aria-expanded', 'true');
-          btn.querySelector('.tm-toggle-label').textContent = 'Tutup Roster';
-        }
-      });
-    });
-  }
-
-  /* ── Pagination ──────────────────────────── */
+  /* ── Pagination ─────────────────────────── */
   function paginationHtml() {
     const total = totalPages();
     if (total <= 1) return '';
@@ -142,8 +67,9 @@
     if (_page + WING < total - 1) pages.push('…');
     if (total > 1) pages.push(total);
 
-    const btn = (p, lbl, dis, act) =>
-      `<button class="pg-btn${act ? ' pg-active' : ''}${dis ? ' pg-disabled' : ''}" data-pg="${p}" ${dis ? 'disabled' : ''}>${lbl}</button>`;
+    const btn = (p, label, disabled, active) =>
+      `<button class="pg-btn${active ? ' pg-active' : ''}${disabled ? ' pg-disabled' : ''}"
+        data-pg="${p}" ${disabled ? 'disabled' : ''}>${label}</button>`;
     const dots = `<span class="pg-dots">…</span>`;
     const items = pages.map(p => p === '…' ? dots : btn(p, p, false, p === _page)).join('');
     return `<div class="pagination">
@@ -153,20 +79,23 @@
     </div>`;
   }
 
-  function bindPaginationEvents() {
-    document.querySelectorAll('.pg-btn:not(.pg-disabled)').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const p = Number(btn.dataset.pg);
-        if (p >= 1 && p <= totalPages()) {
-          _page = p;
-          renderCards();
-          document.getElementById('teamsGrid')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
+  /* ── Render table ───────────────────────── */
+  function renderTable() {
+    const tbody  = document.getElementById('teamsBody');
+    const pgWrap = document.getElementById('paginationWrap');
+    const pgInfo = document.getElementById('pgInfo');
+    if (tbody)  tbody.innerHTML  = tableRows(_filtered);
+    if (pgWrap) pgWrap.innerHTML = paginationHtml();
+    if (pgInfo) {
+      const start = Math.min((_page - 1) * PER_PAGE + 1, _filtered.length);
+      const end   = Math.min(_page * PER_PAGE, _filtered.length);
+      pgInfo.textContent = _filtered.length ? `${start}–${end} dari ${_filtered.length} tim` : '';
+    }
+    bindRowEvents();
+    bindPaginationEvents();
   }
 
-  /* ── Filter ──────────────────────────────── */
+  /* ── Filter ─────────────────────────────── */
   function applyFilter() {
     if (!_teams) return;
     const q = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
@@ -181,23 +110,49 @@
       )
     );
     _page = 1;
-    renderCards();
+    const cnt = document.getElementById('resultCount');
+    if (cnt) cnt.textContent = _filtered.length;
+    renderTable();
+  }
+
+  /* ── Bind events ────────────────────────── */
+  function bindRowEvents() {
+    document.querySelectorAll('.team-row').forEach(row => {
+      row.addEventListener('click', () => {
+        const idx = Number(row.dataset.idx);
+        _openIdx = (_openIdx === idx) ? null : idx;
+        renderTable();
+      });
+    });
+  }
+
+  function bindPaginationEvents() {
+    document.querySelectorAll('.pg-btn:not(.pg-disabled)').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const p = Number(btn.dataset.pg);
+        if (p >= 1 && p <= totalPages()) {
+          _page   = p;
+          _openIdx = null;
+          renderTable();
+          document.querySelector('.teams-table-wrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
   }
 
   function bindFilterEvents() {
     document.getElementById('searchInput')?.addEventListener('input', applyFilter);
-    const clr = document.getElementById('searchClear');
-    clr?.addEventListener('click', () => {
+    document.getElementById('searchClear')?.addEventListener('click', () => {
       const inp = document.getElementById('searchInput');
       if (inp) { inp.value = ''; applyFilter(); inp.focus(); }
     });
+    const resEl = document.getElementById('resultCount');
+    if (resEl) resEl.textContent = _teams?.length ?? 0;
   }
 
-  /* ── Build full page HTML ────────────────── */
+  /* ── Build page HTML ────────────────────── */
   function buildPageHTML(teams) {
-    const totalPlayers  = teams.reduce((s, tm) => s + tm.roster.length, 0);
-    const totalCompanies = new Set(teams.map(tm => tm.company)).size;
-
+    const count = teams.length;
     return `
 <section class="page-hero">
   <div class="hero-orb hero-orb-3" style="opacity:0.3"></div>
@@ -205,62 +160,50 @@
   <p data-i18n="teams.hero.subtitle">Daftar tim yang telah resmi terdaftar di MCC Season 1.</p>
 </section>
 
-<div class="section-inner teams-page-wrap">
+<div class="section-inner" style="padding-top:2.5rem;padding-bottom:5rem">
 
-  <!-- Stats -->
-  <div class="tm-stats" data-aos="fade-up">
-    <div class="tm-stat">
-      <span class="tm-stat-val">${teams.length}</span>
-      <span class="tm-stat-lbl">Tim Terdaftar</span>
-    </div>
-    <div class="tm-stat-sep"></div>
-    <div class="tm-stat">
-      <span class="tm-stat-val">${totalCompanies}</span>
-      <span class="tm-stat-lbl">Perusahaan</span>
-    </div>
-    <div class="tm-stat-sep"></div>
-    <div class="tm-stat">
-      <span class="tm-stat-val">${totalPlayers}</span>
-      <span class="tm-stat-lbl">Total Pemain</span>
-    </div>
-  </div>
-
-  <!-- Search -->
   <div class="filter-bar card" data-aos="fade-up">
     <div class="search-wrap">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input class="search-input" type="text" id="searchInput"
-        placeholder="${t('teams.filter.placeholder') || 'Cari nama tim, perusahaan, kapten, atau pemain...'}" />
-      <button id="searchClear" class="search-clear" title="Hapus pencarian">✕</button>
+        placeholder="Cari nama tim, perusahaan, kapten, atau pemain..." />
+      <button id="searchClear" class="search-clear" title="Hapus">✕</button>
     </div>
     <div class="filter-vdiv"></div>
     <div class="filter-count">
-      <strong id="resultCount">${teams.length}</strong>&nbsp;
+      <strong id="resultCount">${count}</strong>&nbsp;
       <span data-i18n="teams.filter.results">tim ditemukan</span>
     </div>
   </div>
 
-  <!-- Cards -->
-  <div class="teams-grid" id="teamsGrid" data-aos="fade-up">
-    ${teams.length ? teams.slice(0, PER_PAGE).map(tm => cardHtml(tm)).join('') : `
-      <div class="tm-empty" style="grid-column:1/-1">
-        <div class="tm-empty-icon">📭</div>
-        <div>Belum ada tim yang terdaftar.</div>
-      </div>`}
+  <div class="teams-table-wrap" data-aos="fade-up">
+    <table class="teams-table">
+      <thead>
+        <tr>
+          <th class="th-expand"></th>
+          <th class="th-name">Nama Tim</th>
+          <th class="th-company">Perusahaan</th>
+          <th class="th-captain">Kapten</th>
+          <th class="th-count">Pemain</th>
+        </tr>
+      </thead>
+      <tbody id="teamsBody">
+        ${tableRows(teams)}
+      </tbody>
+    </table>
   </div>
 
-  <!-- Pagination -->
   <div class="pagination-bar">
-    <span class="pg-info" id="pgInfo">${teams.length ? `1–${Math.min(PER_PAGE, teams.length)} dari ${teams.length} tim` : ''}</span>
-    <div id="paginationWrap">${paginationHtml()}</div>
+    <span class="pg-info" id="pgInfo"></span>
+    <div id="paginationWrap"></div>
   </div>
 
 </div>`;
   }
 
-  /* ── Public API ──────────────────────────── */
+  /* ── Public API ─────────────────────────── */
   window.MCC.pages.teams = {
     render() {
       if (_teams) return buildPageHTML(_teams);
@@ -270,9 +213,9 @@
     init() {
       if (_teams) {
         _filtered = _teams;
-        _page = 1;
+        _page     = 1;
         bindFilterEvents();
-        bindCardEvents();
+        renderTable();
         return;
       }
 
@@ -285,9 +228,9 @@
           clearTimeout(timeout);
           if (!json.ok || !Array.isArray(json.teams)) throw new Error(json.error || 'Format tidak dikenali.');
 
-          /* Petakan GAS → internal format; gunakan index (idx) sebagai ID unik */
+          /* Petakan GAS → format internal; idx = index array (selalu unik) */
           const data = json.teams.map((tm, i) => ({
-            idx:     i,                                              // ← selalu unik
+            idx:     i,
             name:    tm.name || tm.team_name || tm.nama_tim || '—',
             company: tm.company || tm.perusahaan || tm.company_name || '—',
             captain: tm.captain_name || tm.kapten || '—',
@@ -301,14 +244,13 @@
           _teams    = data;
           _filtered = data;
           _page     = 1;
-
           const root = document.getElementById('app-root');
           if (root) {
             root.innerHTML = buildPageHTML(data);
             window.MCC.i18n?.apply();
             if (typeof AOS !== 'undefined') AOS.refreshHard();
             bindFilterEvents();
-            bindCardEvents();
+            renderTable();
           }
         })
         .catch(err => {
@@ -320,7 +262,7 @@
               <h1 data-i18n-html="teams.hero.title">Tim <span>Terdaftar</span></h1>
             </section>
             <div class="section-inner" style="padding:5rem 0;text-align:center;color:var(--text-dim)">
-              <div style="font-size:2.5rem;margin-bottom:1rem">⚠️</div>
+              <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
               <div>Gagal memuat data tim. Silakan coba lagi nanti.</div>
             </div>`;
         });

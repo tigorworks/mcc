@@ -233,7 +233,7 @@
             idx:     i,
             name:    tm.name || tm.team_name || tm.nama_tim || '—',
             company: tm.company || tm.perusahaan || tm.company_name || '—',
-            captain: tm.captain_name || tm.kapten || '—',
+            captain: tm.captain || tm.captain_name || tm.kapten || '—',
             roster:  (tm.players || []).map(p => ({
               full_name: p.name || p.full_name || '—',
               game_id:   p.game_id || '—',

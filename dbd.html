@@ -257,6 +257,79 @@
     }
     #lastUpdated { color: var(--text-dim); }
 
+    /* ── Checklist perusahaan ────────────────── */
+    .checklist-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .checklist-title {
+      font-family: var(--font-head);
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+    .checklist-progress { font-size: 0.72rem; color: var(--text-dim); }
+    .checklist-progress strong { color: var(--white); }
+    .checklist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 0.55rem;
+    }
+    .cl-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.55rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.02);
+    }
+    .cl-item.registered {
+      border-color: rgba(22,163,74,0.35);
+      background: rgba(22,163,74,0.06);
+    }
+    .cl-icon {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+    }
+    .cl-item.registered .cl-icon { background: rgba(22,163,74,0.2); color: #4ade80; }
+    .cl-item:not(.registered) .cl-icon { background: rgba(255,255,255,0.05); color: var(--text-dim); }
+    .cl-name {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .cl-item.registered .cl-name { color: var(--text); }
+    .cl-badge {
+      font-family: var(--font-head);
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      background: rgba(22,163,74,0.2);
+      color: #4ade80;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
     /* ── Responsive ──────────────────────────── */
     @media (max-width: 640px) {
       .dbd-header { padding: 1rem; }
@@ -279,6 +352,15 @@
 
   <!-- Main -->
   <div class="dbd-wrap">
+
+    <!-- Checklist perusahaan -->
+    <div class="checklist-card" id="checklistCard" style="display:none">
+      <div class="checklist-title">
+        <span>Status Pendaftaran Perusahaan</span>
+        <span class="checklist-progress" id="checklistProgress"></span>
+      </div>
+      <div class="checklist-grid" id="checklistGrid"></div>
+    </div>
 
     <!-- Stats -->
     <div class="stat-row" id="statRow" style="display:none">
@@ -329,7 +411,8 @@
     const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUJr2hGrd4cNWUR29LwiiODoB5so0KHI2qJCZDDeyKznt5dDEX87O9kPX6HLEFDY0f/exec';
     const TEAM_FEE  = 500000;
 
-    let _allTeams = [];
+    let _allTeams   = [];
+    let _allMembers = [];
 
     /* ── Rupiah formatter ───────────────────── */
     function formatRupiah(n) {
@@ -534,18 +617,67 @@
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     }
 
+    /* ── Render checklist perusahaan ───────────── */
+    function renderChecklist(members, teams) {
+      if (!members.length) return;
+
+      /* Hitung jumlah tim per perusahaan dari data sheet */
+      const teamCount = {};
+      teams.forEach(tm => {
+        const co = (tm.company || tm.perusahaan || tm.company_name || '').trim();
+        if (co) teamCount[co] = (teamCount[co] || 0) + 1;
+      });
+
+      const registered = Object.keys(teamCount).length;
+      const total      = members.length;
+
+      document.getElementById('checklistProgress').innerHTML =
+        `<strong>${registered}</strong> / ${total} perusahaan terdaftar`;
+
+      const items = members.map(m => {
+        const count = teamCount[m.name] || 0;
+        const isReg = count > 0;
+        return `
+        <div class="cl-item ${isReg ? 'registered' : ''}">
+          <div class="cl-icon">${isReg ? '✓' : '–'}</div>
+          <span class="cl-name" title="${esc(m.name)}">${esc(m.name)}</span>
+          ${isReg ? `<span class="cl-badge">${count} tim</span>` : ''}
+        </div>`;
+      }).join('');
+
+      document.getElementById('checklistGrid').innerHTML = items;
+      document.getElementById('checklistCard').style.display = '';
+    }
+
+    /* ── Load members.json ──────────────────── */
+    async function loadMembers() {
+      if (_allMembers.length) return _allMembers;
+      try {
+        const resp = await fetch('configuration/members.json', { cache: 'no-store' });
+        _allMembers = await resp.json();
+      } catch (e) {
+        console.warn('[dbd] members.json load failed', e);
+        _allMembers = [];
+      }
+      return _allMembers;
+    }
+
     /* ── Fetch data dari GAS sheet ──────────── */
     async function loadData() {
       showLoading();
       try {
-        const url  = SCRIPT_URL + '?action=getTeams&t=' + Date.now();
-        const resp = await fetch(url, { redirect: 'follow' });
-        if (!resp.ok) throw new Error('HTTP ' + resp.status);
-        const json = await resp.json();
+        const [gasResp, members] = await Promise.all([
+          fetch(SCRIPT_URL + '?action=getTeams&t=' + Date.now(), { redirect: 'follow' }),
+          loadMembers()
+        ]);
+
+        if (!gasResp.ok) throw new Error('HTTP ' + gasResp.status);
+        const json = await gasResp.json();
         if (!json.ok) throw new Error(json.error || 'Gagal memuat data.');
         if (!Array.isArray(json.teams)) throw new Error('Format data tidak dikenali.');
 
         _allTeams = json.teams;
+        renderChecklist(members, _allTeams);
         renderTable(_allTeams);
         updateStats(_allTeams);
         document.getElementById('statRow').style.display   = '';

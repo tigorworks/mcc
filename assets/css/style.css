@@ -1613,6 +1613,12 @@ input[type="file"].fi::file-selector-button:hover {
 
 input[type="file"].fi:focus { border-color: rgba(230,0,38,0.5); box-shadow: 0 0 0 3px rgba(230,0,38,0.07); }
 
+/* Inline validation */
+.fi.is-error, .fs.is-error { border-color: #e60026 !important; background: rgba(230,0,38,0.05); box-shadow: 0 0 0 3px rgba(230,0,38,0.1); }
+.field-error { color: #e60026; font-size: 0.78rem; margin-top: 0.2rem; display: none; }
+.field-error.visible { display: block; }
+.players-err-wrap { margin-top: 0.75rem; }
+
 .fsep { height: 1.5rem; }
 
 .roster-table { width: 100%; border-collapse: collapse; }

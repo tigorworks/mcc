@@ -25,6 +25,27 @@
   function t(key) { return window.MCC?.i18n?.t(key) ?? key; }
   function getLang() { return window.MCC?.i18n?.getLang?.() || 'id'; }
 
+  /* ── Inline validation helpers ─────────────── */
+  function markError(el, msg) {
+    el.classList.add('is-error');
+    const errEl = el.closest('.fgroup')?.querySelector('.field-error');
+    if (errEl) { errEl.textContent = msg; errEl.classList.add('visible'); }
+    const clearFn = () => { clearError(el); el.removeEventListener('input', clearFn); el.removeEventListener('change', clearFn); };
+    el.addEventListener('input', clearFn);
+    el.addEventListener('change', clearFn);
+  }
+
+  function clearError(el) {
+    el.classList.remove('is-error');
+    const errEl = el.closest('.fgroup')?.querySelector('.field-error');
+    if (errEl) { errEl.textContent = ''; errEl.classList.remove('visible'); }
+  }
+
+  function clearAllErrors(form) {
+    form.querySelectorAll('.is-error').forEach(el => el.classList.remove('is-error'));
+    form.querySelectorAll('.field-error').forEach(err => { err.textContent = ''; err.classList.remove('visible'); });
+  }
+
   function formatRupiah(amount) {
     return 'Rp ' + amount.toLocaleString('id-ID');
   }
@@ -85,24 +106,27 @@
           <div class="fgrid">
             <div class="fgroup">
               <label class="fi-label" data-i18n="register.label.company">Nama Perusahaan *</label>
-              <select name="company" class="fs" required>
+              <select name="company" class="fs" value="${_data.company}">
                 <option value="" data-i18n="register.placeholder.company">-- Pilih Perusahaan --</option>
-                ${members.map(m => `<option value="${m.name}">${m.name}</option>`).join('')}
+                ${members.map(m => `<option value="${m.name}" ${_data.company === m.name ? 'selected' : ''}>${m.name}</option>`).join('')}
               </select>
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label" data-i18n="register.label.pic_name">Nama PIC / Manager *</label>
-              <input type="text" name="pic_name" class="fi" required />
+              <input type="text" name="pic_name" class="fi" value="${_data.pic_name || ''}" />
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label" data-i18n="register.label.pic_wa">WhatsApp PIC / Manager *</label>
-              <input type="tel" name="pic_wa" class="fi" data-i18n-placeholder="register.placeholder.pic_wa" placeholder="628..." required />
+              <input type="tel" name="pic_wa" class="fi" data-i18n-placeholder="register.placeholder.pic_wa" placeholder="628..." value="${_data.pic_wa || ''}" />
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label" data-i18n="register.label.berkas">Berkas Tim Terdaftar *</label>
-              <input type="file" name="berkas_file" class="fi" accept=".pdf,.doc,.docx" required />
-              <small style="color:var(--text-dim);margin-top:0.5rem;display:block" data-i18n="register.helper.berkas">Maks 15MB, format: PDF/DOC/DOCX</small>
-              <div class="file-error" style="color:#e60026;font-size:0.85rem;margin-top:0.5rem;display:none"></div>
+              <input type="file" name="berkas_file" class="fi" accept=".pdf,.doc,.docx" />
+              <small style="color:var(--text-dim);margin-top:0.3rem;display:block" data-i18n="register.helper.berkas">Maks 15MB, format: PDF/DOC/DOCX</small>
+              <div class="field-error"></div>
             </div>
           </div>
         </div>
@@ -184,20 +208,24 @@
           <div class="fgrid">
             <div class="fgroup">
               <label class="fi-label">Nama Tim *</label>
-              <input type="text" name="team_name" class="fi" value="${team.name || ''}" ${isEnabled ? 'required' : ''} />
+              <input type="text" name="team_name" class="fi" value="${team.name || ''}" />
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label">Nama Kapten *</label>
-              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" ${isEnabled ? 'required' : ''} />
+              <input type="text" name="captain_name" class="fi" value="${team.captain_name || ''}" />
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label">WhatsApp Kapten *</label>
-              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" placeholder="628..." ${isEnabled ? 'required' : ''} />
+              <input type="tel" name="captain_wa" class="fi" value="${team.captain_wa || ''}" placeholder="628..." />
+              <div class="field-error"></div>
             </div>
             <div class="fgroup">
               <label class="fi-label">Logo Tim (Gambar) *</label>
-              <input type="file" name="logo_file" class="fi" accept="image/*" ${isEnabled && !team.logo_file ? 'required' : ''} />
-              <small style="color:var(--text-dim);margin-top:0.5rem;display:block">Format: JPG, PNG, SVG</small>
+              <input type="file" name="logo_file" class="fi" accept="image/*" />
+              <small style="color:var(--text-dim);margin-top:0.3rem;display:block">Format: JPG, PNG, SVG${team.logo_file ? ' · <span style="color:#4ade80">✓ sudah diunggah</span>' : ''}</small>
+              <div class="field-error"></div>
             </div>
           </div>
           ${isOptional ? '</div>' : ''}
@@ -208,6 +236,7 @@
             <h3 data-i18n="register.section.players">Daftar Pemain</h3>
             <small style="color:var(--text-dim)" data-i18n="register.helper.players">Minimal 5 pemain wajib diisi, maksimal 7 pemain</small>
             ${playerRowsHtml(teamIndex)}
+            <div class="players-err-wrap"><div class="field-error" id="playersErr${teamIndex}"></div></div>
           </div>
         </div>
       </form>
@@ -508,25 +537,43 @@
     if (step === 1) {
       const form = document.getElementById('regForm1');
       if (!form) return;
-      const company = form.company.value;
-      const pic_name = form.pic_name.value;
-      const pic_wa = form.pic_wa.value;
+      clearAllErrors(form);
+
+      const company    = form.company.value;
+      const pic_name   = (form.pic_name.value || '').trim();
+      const pic_wa     = (form.pic_wa.value || '').trim();
       const berkas_file = form.berkas_file.files[0];
 
-      if (berkas_file && berkas_file.size > 15 * 1024 * 1024) {
-        const err = form.querySelector('.file-error');
-        if (err) {
-          err.textContent = t('register.helper.file_too_large');
-          err.style.display = 'block';
-        }
-        return false;
+      let hasError = false;
+
+      if (!company) {
+        markError(form.company, 'Pilih perusahaan terlebih dahulu.');
+        hasError = true;
+      }
+      if (!pic_name) {
+        markError(form.pic_name, 'Nama PIC / Manager wajib diisi.');
+        hasError = true;
+      }
+      if (!pic_wa) {
+        markError(form.pic_wa, 'Nomor WhatsApp PIC wajib diisi.');
+        hasError = true;
+      }
+      if (!berkas_file && !_data.berkas_file) {
+        markError(form.berkas_file, 'Berkas tim wajib diunggah.');
+        hasError = true;
+      } else if (berkas_file && berkas_file.size > 15 * 1024 * 1024) {
+        markError(form.berkas_file, 'File terlalu besar (maks 15MB).');
+        hasError = true;
       }
 
-      _data.company = company;
-      _data.pic_name = pic_name;
-      _data.pic_wa = pic_wa;
-      _data.berkas_file = berkas_file;
+      if (hasError) return false;
+
+      _data.company    = company;
+      _data.pic_name   = pic_name;
+      _data.pic_wa     = pic_wa;
+      if (berkas_file) _data.berkas_file = berkas_file;
       return true;
+
     } else if (step >= 2 && step <= 4) {
       const teamIndex = step - 2;
       const isOptional = teamIndex >= 1;
@@ -539,58 +586,72 @@
         return true;
       }
 
-      const team_name = (form.team_name.value || '').trim();
-      const captain_name = form.captain_name.value;
-      const captain_wa = form.captain_wa.value;
-      const logo_file = form.logo_file.files[0];
+      clearAllErrors(form);
 
-      if (!captain_name || !captain_wa) {
-        alert(`Tim ${teamIndex + 1}: Nama kapten dan WhatsApp kapten wajib diisi.`);
-        return false;
+      const team_name   = (form.team_name.value || '').trim();
+      const captain_name = (form.captain_name.value || '').trim();
+      const captain_wa  = (form.captain_wa.value || '').trim();
+      const logo_file   = form.logo_file.files[0];
+
+      let hasError = false;
+
+      if (!team_name) {
+        markError(form.team_name, 'Nama tim wajib diisi.');
+        hasError = true;
+      }
+      if (!captain_name) {
+        markError(form.captain_name, 'Nama kapten wajib diisi.');
+        hasError = true;
+      }
+      if (!captain_wa) {
+        markError(form.captain_wa, 'Nomor WhatsApp kapten wajib diisi.');
+        hasError = true;
       }
       if (!logo_file && !_data.teams[teamIndex].logo_file) {
-        alert(`Tim ${teamIndex + 1}: Logo tim wajib diunggah.`);
-        return false;
+        markError(form.logo_file, 'Logo tim wajib diunggah.');
+        hasError = true;
       }
 
+      // Kumpulkan data pemain
       const players = [];
-      document.querySelectorAll(`.player-input`).forEach(input => {
+      document.querySelectorAll('.player-input').forEach(input => {
         const playerIdx = parseInt(input.dataset.player);
         const field = input.dataset.field;
         if (!players[playerIdx]) players[playerIdx] = { name: '', game_id: '', game_nick: '' };
-        players[playerIdx][field] = input.value;
+        players[playerIdx][field] = input.value.trim();
       });
 
       const validPlayers = players.filter(p => p && p.name && p.game_id && p.game_nick);
       if (validPlayers.length < 5) {
-        alert(`${t('register.section.team')} ${step - 1}: ${t('register.error.min_players')}`);
-        return false;
+        const errEl = document.getElementById(`playersErr${teamIndex}`);
+        if (errEl) { errEl.textContent = 'Minimal 5 pemain wajib diisi lengkap (Nama, ID, dan Nickname).'; errEl.classList.add('visible'); }
+        hasError = true;
       }
+
+      if (hasError) return false;
 
       _data.teams[teamIndex] = {
         name: team_name,
         logo_file: logo_file || _data.teams[teamIndex].logo_file,
-        captain_name: captain_name,
-        captain_wa: captain_wa,
+        captain_name,
+        captain_wa,
         players: validPlayers,
         enabled: true
       };
       return true;
+
     } else if (step === 5) {
       const form = document.getElementById('regForm5');
       if (!form) return;
-      if (!form.checkValidity()) {
-        form.reportValidity();
-        return false;
-      }
+      clearAllErrors(form);
+
       const proof = form.payment_proof_file.files[0];
       if (!proof) {
-        alert('Bukti pembayaran wajib diunggah.');
+        markError(form.payment_proof_file, 'Bukti pembayaran wajib diunggah.');
         return false;
       }
       if (proof.size > 10 * 1024 * 1024) {
-        const err = form.querySelector('.file-error');
-        if (err) { err.textContent = 'File terlalu besar (maks 10MB)'; err.style.display = 'block'; }
+        markError(form.payment_proof_file, 'File terlalu besar (maks 10MB).');
         return false;
       }
       _data.payment_proof_file = proof;
@@ -681,11 +742,19 @@
       if (root) { root.innerHTML = successHtml(); window.MCC.i18n?.apply(); }
     } catch (err) {
       console.error('[register] submit error', err);
-      alert('Gagal mengirim data. Silakan coba lagi atau hubungi panitia.');
       submitBtn.disabled = false;
       if (backBtn) backBtn.disabled = false;
       submitText.style.display = 'inline';
       submitSpinner.style.display = 'none';
+      // Tampilkan error di bawah tombol submit
+      let errBanner = document.getElementById('submitErrBanner');
+      if (!errBanner) {
+        errBanner = document.createElement('div');
+        errBanner.id = 'submitErrBanner';
+        errBanner.style.cssText = 'color:#e60026;font-size:0.85rem;margin-top:0.75rem;text-align:center';
+        submitBtn.parentElement.appendChild(errBanner);
+      }
+      errBanner.textContent = 'Gagal mengirim data. Silakan coba lagi atau hubungi panitia.';
     }
   }
 

@@ -1054,6 +1054,38 @@ footer {
 .no-result svg { width: 46px; opacity: 0.18; margin: 0 auto 1rem; }
 
 /* =====================================================
+   TEAMS PAGE — STATS ROW
+   ===================================================== */
+.teams-stat-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.teams-stat-card {
+  flex: 1;
+  min-width: 140px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.1rem 1.4rem;
+}
+.teams-stat-val {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--red);
+  line-height: 1;
+}
+.teams-stat-lbl {
+  font-size: 0.78rem;
+  color: var(--text-dim);
+  margin-top: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* =====================================================
    TEAMS TABLE
    ===================================================== */
 .teams-table-wrap {

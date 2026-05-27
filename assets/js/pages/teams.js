@@ -152,7 +152,10 @@
 
   /* ── Build page HTML ────────────────────── */
   function buildPageHTML(teams) {
-    const count = teams.length;
+    const count         = teams.length;
+    const totalCompanies = new Set(teams.map(tm => tm.company)).size;
+    const totalPlayers  = teams.reduce((s, tm) => s + tm.roster.length, 0);
+
     return `
 <section class="page-hero">
   <div class="hero-orb hero-orb-3" style="opacity:0.3"></div>
@@ -161,6 +164,22 @@
 </section>
 
 <div class="section-inner" style="padding-top:2.5rem;padding-bottom:5rem">
+
+  <!-- Stats -->
+  <div class="teams-stat-row" data-aos="fade-up">
+    <div class="teams-stat-card">
+      <div class="teams-stat-val">${count}</div>
+      <div class="teams-stat-lbl">Total Tim</div>
+    </div>
+    <div class="teams-stat-card">
+      <div class="teams-stat-val">${totalCompanies}</div>
+      <div class="teams-stat-lbl">Perusahaan</div>
+    </div>
+    <div class="teams-stat-card">
+      <div class="teams-stat-val">${totalPlayers}</div>
+      <div class="teams-stat-lbl">Total Pemain</div>
+    </div>
+  </div>
 
   <div class="filter-bar card" data-aos="fade-up">
     <div class="search-wrap">

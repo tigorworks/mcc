@@ -634,7 +634,15 @@
       document.getElementById('checklistProgress').innerHTML =
         `<strong>${registered}</strong> / ${total} perusahaan terdaftar`;
 
-      const items = members.map(m => {
+      /* Urutkan: yang sudah daftar duluan, lalu yang belum */
+      const sorted = [...members].sort((a, b) => {
+        const aReg = (teamCount[a.name] || 0) > 0;
+        const bReg = (teamCount[b.name] || 0) > 0;
+        if (aReg === bReg) return 0;
+        return aReg ? -1 : 1;
+      });
+
+      const items = sorted.map(m => {
         const count = teamCount[m.name] || 0;
         const isReg = count > 0;
         return `

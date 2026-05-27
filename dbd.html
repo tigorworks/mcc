@@ -781,6 +781,13 @@
           <div class="spinner"></div>
           <span class="state-msg">Memuat data tim...</span>
         </div>`;
+      /* Reset stats & checklist progress agar user tahu sedang refresh */
+      ['statTeams','statCompanies','statPlayers'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = '…';
+      });
+      const prog = document.getElementById('checklistProgress');
+      if (prog) prog.textContent = 'Memuat…';
     }
 
     function showError(msg) {

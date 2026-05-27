@@ -885,7 +885,7 @@ footer {
 .search-input {
   width: 100%;
   height: 37px;
-  padding: 0 0.85rem 0 2.3rem;
+  padding: 0 2rem 0 2.3rem; /* right padding for clear button */
   background: rgba(7,9,26,0.8);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -1201,16 +1201,19 @@ footer {
 
 /* Search clear button */
 .search-clear {
+  position: absolute;
+  right: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.8rem;
+  padding: 0.2rem 0.35rem;
+  font-size: 0.72rem;
   line-height: 1;
   border-radius: 4px;
   transition: color var(--transition);
-  flex-shrink: 0;
 }
 .search-clear:hover { color: var(--text); }
 

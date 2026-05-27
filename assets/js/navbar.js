@@ -4,7 +4,7 @@
   const NAV_LINKS = [
     { href: '#home',     key: 'nav.home',    page: 'home' },
     { href: '#members',  key: 'nav.members', page: 'members' },
-    // { href: '#teams',    key: 'nav.teams',   page: 'teams' },
+    { href: '#teams',    key: 'nav.teams',   page: 'teams' },
     { href: '#faq',      key: 'nav.faq',     page: 'faq' },
   ];
 

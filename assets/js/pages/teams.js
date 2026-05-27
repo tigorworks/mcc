@@ -2,6 +2,8 @@
   window.MCC = window.MCC || {};
   window.MCC.pages = window.MCC.pages || {};
 
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUJr2hGrd4cNWUR29LwiiODoB5so0KHI2qJCZDDeyKznt5dDEX87O9kPX6HLEFDY0f/exec';
+
   const PALETTE = [
     '#e60026','#f59e0b','#0891b2','#16a34a','#7c3aed',
     '#db2777','#0284c7','#d97706','#059669','#dc2626',
@@ -221,12 +223,27 @@
       }
 
       const ctrl    = new AbortController();
-      const timeout = setTimeout(() => ctrl.abort(), 10000);
+      const timeout = setTimeout(() => ctrl.abort(), 15000);
 
-      fetch('configuration/teams.json', { signal: ctrl.signal, cache: 'no-store' })
+      fetch(SCRIPT_URL + '?action=getTeams&t=' + Date.now(), { signal: ctrl.signal, redirect: 'follow' })
         .then(r => r.json())
-        .then(data => {
+        .then(json => {
           clearTimeout(timeout);
+          if (!json.ok || !Array.isArray(json.teams)) throw new Error(json.error || 'Format tidak dikenali.');
+
+          /* Petakan data GAS → format yang dipakai teams.js */
+          const data = json.teams.map((tm, i) => ({
+            id:      tm.row_number ?? (i + 2),
+            name:    tm.name || tm.team_name || tm.nama_tim || '—',
+            company: tm.company || tm.perusahaan || tm.company_name || '—',
+            captain: tm.captain_name || tm.kapten || '—',
+            roster:  (tm.players || []).map(p => ({
+              full_name: p.name || p.full_name || '—',
+              game_id:   p.game_id || '—',
+              game_nick: p.game_nick || p.nickname || '—'
+            }))
+          }));
+
           _teams    = data;
           _filtered = data;
           _page     = 1;
@@ -242,6 +259,14 @@
         .catch(err => {
           clearTimeout(timeout);
           if (err.name !== 'AbortError') console.error('[teams] fetch failed', err);
+          const root = document.getElementById('app-root');
+          if (root) root.innerHTML = `
+            <section class="page-hero">
+              <h1 data-i18n-html="teams.hero.title">Tim <span>Terdaftar</span></h1>
+            </section>
+            <div class="section-inner" style="padding:4rem 0;text-align:center;color:var(--text-dim)">
+              ⚠️ Gagal memuat data tim. Silakan coba lagi.
+            </div>`;
         });
     }
   };

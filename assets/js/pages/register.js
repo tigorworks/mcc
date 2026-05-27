@@ -2,8 +2,9 @@
   window.MCC = window.MCC || {};
   window.MCC.pages = window.MCC.pages || {};
 
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwUJr2hGrd4cNWUR29LwiiODoB5so0KHI2qJCZDDeyKznt5dDEX87O9kPX6HLEFDY0f/exec';
-  const TEAM_FEE = 500000; // Biaya pendaftaran per tim (Rupiah) 
+  const SCRIPT_URL        = 'https://script.google.com/macros/s/AKfycbwUJr2hGrd4cNWUR29LwiiODoB5so0KHI2qJCZDDeyKznt5dDEX87O9kPX6HLEFDY0f/exec';
+  const TEAM_FEE          = 500000; // Biaya pendaftaran per tim (Rupiah)
+  const REGISTRATION_OPEN = false;  // ← ubah ke true untuk membuka pendaftaran
 
   let _members = null;
   let _step = 1;
@@ -401,6 +402,28 @@
     </div>`;
   }
 
+  function closedHtml() {
+    return `
+    <section class="page-hero">
+      <div class="hero-orb hero-orb-3" style="opacity:0.3"></div>
+      <h1 data-i18n-html="register.hero.title">Daftar <span>Tim</span></h1>
+    </section>
+    <div class="section-inner reg-wrap" style="text-align:center;padding-top:3rem;padding-bottom:4rem">
+      <div style="font-size:4rem;margin-bottom:1.5rem">🔒</div>
+      <h2 style="margin:0 0 1rem" data-i18n="register.closed.title">Pendaftaran Ditutup</h2>
+      <p style="color:var(--text-dim);max-width:480px;margin:0 auto 1rem" data-i18n="register.closed.desc">
+        Pendaftaran untuk MCC Season 1 telah resmi ditutup. Terima kasih atas antusiasme seluruh peserta.
+      </p>
+      <p style="color:var(--text-dim);font-size:0.9rem;max-width:480px;margin:0 auto 2rem" data-i18n="register.closed.note">
+        Untuk informasi lebih lanjut, silakan hubungi panitia melalui WhatsApp.
+      </p>
+      <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+        <a href="https://wa.me/6208128136678" target="_blank" rel="noopener" class="btn btn-outline">💬 Tigor: 0812-8136-678</a>
+        <a href="#home" class="btn btn-primary" data-i18n="register.closed.back">Kembali ke Beranda</a>
+      </div>
+    </div>`;
+  }
+
   function generateInvoiceHtml() {
     const activeTeams = _data.teams.filter(tm => tm.name && tm.name.trim() !== '');
     const total = activeTeams.length * TEAM_FEE;
@@ -777,6 +800,7 @@
 
   window.MCC.pages.register = {
     render() {
+      if (!REGISTRATION_OPEN) return closedHtml();
       if (!_members) return `<div class="page-loading"><div class="spinner"></div></div>`;
       if (_step === 1) return stepHtml1(_members);
       if (_step >= 2 && _step <= 4) return stepHtmlTeam(_step - 2);
@@ -863,6 +887,13 @@
     },
 
     init() {
+      // Saat pendaftaran ditutup, langsung render tanpa fetch
+      if (!REGISTRATION_OPEN) {
+        const root = document.getElementById('app-root');
+        if (root) { root.innerHTML = closedHtml(); window.MCC.i18n?.apply(); }
+        return;
+      }
+
       if (_members) return;
 
       const ctrl = new AbortController();

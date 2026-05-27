@@ -154,6 +154,10 @@
     "register.success.desc": "Terima kasih telah mendaftarkan tim Anda. Panitia MCC Season 1 akan segera menghubungi Anda untuk verifikasi data.",
     "register.success.back": "Kembali ke Beranda",
     "register.error.min_players": "Minimal 5 pemain wajib diisi lengkap!",
+    "register.closed.title": "Pendaftaran Ditutup",
+    "register.closed.desc": "Pendaftaran untuk MCC Season 1 telah resmi ditutup. Terima kasih atas antusiasme seluruh peserta.",
+    "register.closed.note": "Untuk informasi lebih lanjut, silakan hubungi panitia melalui WhatsApp.",
+    "register.closed.back": "Kembali ke Beranda",
 
     "faq.hero.title": "Pertanyaan yang Sering <span>Ditanyakan</span>",
     "faq.hero.subtitle": "Temukan jawaban atas pertanyaan umum seputar MCC Season 1.",
@@ -318,6 +322,10 @@
     "register.success.desc": "Thank you for registering your team. The MCC Season 1 committee will soon contact you for data verification.",
     "register.success.back": "Back to Home",
     "register.error.min_players": "Minimum 5 players required!",
+    "register.closed.title": "Registration Closed",
+    "register.closed.desc": "Registration for MCC Season 1 has officially closed. Thank you for the enthusiasm of all participants.",
+    "register.closed.note": "For further information, please contact the committee via WhatsApp.",
+    "register.closed.back": "Back to Home",
 
     "faq.hero.title": "Frequently Asked <span>Questions</span>",
     "faq.hero.subtitle": "Find answers to common questions about MCC Season 1.",

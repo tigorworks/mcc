@@ -274,7 +274,7 @@
         <div class="fcard">
           <div class="fgroup">
             <label class="fi-label">Upload Bukti Pembayaran *</label>
-            <input type="file" name="payment_proof_file" class="fi" accept="image/*,.pdf" required />
+            <input type="file" name="payment_proof_file" class="fi" accept="image/*,.pdf" />
             <small style="color:var(--text-dim);margin-top:0.5rem;display:block">Format: JPG, PNG, PDF. Maks 10MB.</small>
             <div class="file-error" style="color:#e60026;font-size:0.85rem;margin-top:0.5rem;display:none"></div>
           </div>
@@ -356,13 +356,14 @@
       <form id="regForm6" class="reg-form">
         <div class="fcard" style="background:rgba(230,0,38,0.08);border-color:rgba(230,0,38,0.3)">
           <div class="fcheck">
-            <input type="checkbox" id="agree1" required />
+            <input type="checkbox" id="agree1" />
             <label for="agree1" data-i18n="register.confirm.agree1">Saya menyatakan bahwa data yang diisi adalah benar dan sesuai dengan identitas resmi perusahaan.</label>
           </div>
           <div class="fcheck">
-            <input type="checkbox" id="agree2" required />
+            <input type="checkbox" id="agree2" />
             <label for="agree2" data-i18n="register.confirm.agree2">Saya setuju dengan syarat dan ketentuan pendaftaran MCC Season 1.</label>
           </div>
+          <div class="field-error" id="agreeErr" style="margin-top:0.5rem"></div>
         </div>
       </form>
 
@@ -675,9 +676,13 @@
   }
 
   async function submitForm() {
-    const form6 = document.getElementById('regForm6');
-    if (!form6.checkValidity()) {
-      form6.reportValidity();
+    const agree1 = document.getElementById('agree1');
+    const agree2 = document.getElementById('agree2');
+    const agreeErr = document.getElementById('agreeErr');
+    if (!agree1?.checked || !agree2?.checked) {
+      if (agreeErr) { agreeErr.textContent = 'Centang kedua pernyataan persetujuan untuk melanjutkan.'; agreeErr.classList.add('visible'); }
+      if (agree1) agree1.addEventListener('change', () => { if (agree1.checked && agree2?.checked && agreeErr) agreeErr.classList.remove('visible'); }, { once: true });
+      if (agree2) agree2.addEventListener('change', () => { if (agree2.checked && agree1?.checked && agreeErr) agreeErr.classList.remove('visible'); }, { once: true });
       return;
     }
 

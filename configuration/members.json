@@ -9,7 +9,8 @@
     "logo": "assets/images/logo/bca.png",
     "club": null,
     "lead": null,
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "ojk",
@@ -21,7 +22,8 @@
     "logo": "assets/images/logo/ojk.png",
     "club": null,
     "lead": "Fauzan",
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "antam",
@@ -33,7 +35,8 @@
     "logo": "assets/images/logo/antam.png",
     "club": "ANTM ESPORTS",
     "lead": "Alvin Ridho",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "danamon",
@@ -45,7 +48,8 @@
     "logo": "assets/images/logo/kkd.jpeg",
     "club": null,
     "lead": "Ozi",
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "bankdki",
@@ -57,7 +61,8 @@
     "logo": "assets/images/logo/bankdki.png",
     "club": "Bank DKI Esports Community",
     "lead": "Imam Prayudha",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "mandiri",
@@ -69,7 +74,8 @@
     "logo": "assets/images/logo/bankmandiri.png",
     "club": "Mandiri Club eSports",
     "lead": "Tigor Manurung",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "ocbc",
@@ -81,7 +87,8 @@
     "logo": "assets/images/logo/ocbc.png",
     "club": "OCBC eSports",
     "lead": "Dino",
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "permata",
@@ -93,7 +100,8 @@
     "logo": "assets/images/logo/permata.png",
     "club": "Permata E-Sport Club",
     "lead": "Angga Iqbal",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "bsi",
@@ -105,7 +113,8 @@
     "logo": "assets/images/logo/bsi.png",
     "club": "BSI Club MLBB",
     "lead": "Reza Mahendra",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "btn",
@@ -117,7 +126,8 @@
     "logo": "assets/images/logo/btn.png",
     "club": "BTN E-Sports Community",
     "lead": "Gymnastiar",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "mansek",
@@ -129,7 +139,8 @@
     "logo": "assets/images/logo/mandirisekuritas.png",
     "club": "Mansek E-Sports",
     "lead": "Riyantoro N",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "pegadaian",
@@ -141,7 +152,8 @@
     "logo": "assets/images/logo/pegadaian.png",
     "club": "Pegadaian E-Sport Club",
     "lead": "Reza Fahlevi / Arief Suhada",
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "pln",
@@ -153,7 +165,8 @@
     "logo": "assets/images/logo/pln.png",
     "club": null,
     "lead": "Yoga",
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "rintis",
@@ -165,7 +178,8 @@
     "logo": "assets/images/logo/rintis.png",
     "club": "PRIMA Community",
     "lead": null,
-    "hasClub": true
+    "hasClub": true,
+    "visible": true
   },
   {
     "id": "bjb",
@@ -177,7 +191,8 @@
     "logo": "assets/images/logo/bjb.png",
     "club": null,
     "lead": null,
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "bsn",
@@ -189,7 +204,8 @@
     "logo": "assets/images/logo/bsn.png",
     "club": null,
     "lead": null,
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   },
   {
     "id": "bjbs",
@@ -201,6 +217,7 @@
     "logo": "assets/images/logo/bjbs.png",
     "club": null,
     "lead": null,
-    "hasClub": false
+    "hasClub": false,
+    "visible": true
   }
 ]

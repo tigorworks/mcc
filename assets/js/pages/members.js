@@ -108,10 +108,10 @@
         .then(r => r.json())
         .then(data => {
           clearTimeout(timeout);
-          _members = data;
+          _members = data.filter(m => m.visible !== false);
           const root = document.getElementById('app-root');
           if (root) {
-            root.innerHTML = renderPage(data);
+            root.innerHTML = renderPage(_members);
             window.MCC.i18n?.apply();
             if (typeof AOS !== 'undefined') AOS.refreshHard();
           }

@@ -662,7 +662,7 @@
       if (_allMembers.length) return _allMembers;
       try {
         const resp = await fetch('configuration/members.json', { cache: 'no-store' });
-        _allMembers = await resp.json();
+        _allMembers = (await resp.json()).filter(m => m.visible !== false);
       } catch (e) {
         console.warn('[dbd] members.json load failed', e);
         _allMembers = [];

@@ -42,7 +42,7 @@
 }
 
 /* ----- BASE ----- */
-html { scroll-behavior: smooth; }
+html { scroll-behavior: smooth; overflow-x: hidden; }
 
 body {
   background: var(--bg);
@@ -387,6 +387,8 @@ body::before {
    PAGE HERO (inner pages)
    ===================================================== */
 .page-hero {
+  position: relative;
+  overflow: hidden;
   padding-top: calc(var(--nav-h) + 3.5rem);
   padding-bottom: 3rem;
   text-align: center;

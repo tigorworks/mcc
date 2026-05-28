@@ -29,7 +29,11 @@
         <td class="ct-nick">${p.game_nick}</td>
       </tr>`).join('');
     return `<table class="child-table">
-      <thead><tr><th>Nama Lengkap</th><th>Game ID</th><th>Nama IG</th></tr></thead>
+      <thead><tr>
+        <th data-i18n="teams.table.full_name">Nama Lengkap</th>
+        <th data-i18n="teams.table.game_id">Game ID</th>
+        <th data-i18n="teams.table.game_nick">Nama IG</th>
+      </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
   }
@@ -48,7 +52,7 @@
         <td class="td-name">${tm.name}</td>
         <td class="td-company">${tm.company}</td>
         <td class="td-captain">${tm.captain}</td>
-        <td class="td-count">${tm.roster.length} <span class="count-label">pemain</span></td>
+        <td class="td-count">${tm.roster.length} <span class="count-label">${t('teams.table.player_count')}</span></td>
       </tr>
       <tr class="team-detail-row${isOpen ? '' : ' hidden'}" data-for="${tm.idx}">
         <td colspan="5">${rosterHtml(tm.roster)}</td>
@@ -89,7 +93,7 @@
     if (pgInfo) {
       const start = Math.min((_page - 1) * PER_PAGE + 1, _filtered.length);
       const end   = Math.min(_page * PER_PAGE, _filtered.length);
-      pgInfo.textContent = _filtered.length ? `${start}–${end} dari ${_filtered.length} tim` : '';
+      pgInfo.textContent = _filtered.length ? `${start}–${end} ${t('teams.pagination.of')} ${_filtered.length} ${t('teams.pagination.teams')}` : '';
     }
     bindRowEvents();
     bindPaginationEvents();
@@ -169,15 +173,15 @@
   <div class="teams-stat-row" data-aos="fade-up">
     <div class="teams-stat-card">
       <div class="teams-stat-val">${count}</div>
-      <div class="teams-stat-lbl">Total Tim</div>
+      <div class="teams-stat-lbl" data-i18n="teams.stat.total_teams">Total Tim</div>
     </div>
     <div class="teams-stat-card">
       <div class="teams-stat-val">${totalCompanies}</div>
-      <div class="teams-stat-lbl">Perusahaan</div>
+      <div class="teams-stat-lbl" data-i18n="teams.stat.companies">Perusahaan</div>
     </div>
     <div class="teams-stat-card">
       <div class="teams-stat-val">${totalPlayers}</div>
-      <div class="teams-stat-lbl">Total Pemain</div>
+      <div class="teams-stat-lbl" data-i18n="teams.stat.total_players">Total Pemain</div>
     </div>
   </div>
 
@@ -187,8 +191,9 @@
         <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
       </svg>
       <input class="search-input" type="text" id="searchInput"
+        data-i18n-placeholder="teams.filter.search_placeholder"
         placeholder="Cari nama tim, perusahaan, kapten, atau pemain..." />
-      <button id="searchClear" class="search-clear" title="Hapus">✕</button>
+      <button id="searchClear" class="search-clear" title="${t('teams.filter.clear')}">✕</button>
     </div>
     <div class="filter-vdiv"></div>
     <div class="filter-count">
@@ -202,10 +207,10 @@
       <thead>
         <tr>
           <th class="th-expand"></th>
-          <th class="th-name">Nama Tim</th>
-          <th class="th-company">Perusahaan</th>
-          <th class="th-captain">Kapten</th>
-          <th class="th-count">Pemain</th>
+          <th class="th-name" data-i18n="teams.table.team_name">Nama Tim</th>
+          <th class="th-company" data-i18n="teams.table.company">Perusahaan</th>
+          <th class="th-captain" data-i18n="teams.table.captain">Kapten</th>
+          <th class="th-count" data-i18n="teams.table.players">Pemain</th>
         </tr>
       </thead>
       <tbody id="teamsBody">
@@ -282,7 +287,7 @@
             </section>
             <div class="section-inner" style="padding:5rem 0;text-align:center;color:var(--text-dim)">
               <div style="font-size:2rem;margin-bottom:1rem">⚠️</div>
-              <div>Gagal memuat data tim. Silakan coba lagi nanti.</div>
+              <div data-i18n="teams.error.load">Gagal memuat data tim. Silakan coba lagi nanti.</div>
             </div>`;
         });
     }

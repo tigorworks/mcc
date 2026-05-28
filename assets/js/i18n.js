@@ -3,10 +3,11 @@
   let _lang = localStorage.getItem(STORAGE_KEY) || 'id';
   let _dict = {};
 
-  // Sync XHR so translations are available before any page script runs
+  // Sync XHR so translations are available before any page script runs.
+  // Cache-bust with build timestamp to prevent stale translations after deploys.
   try {
     const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'configuration/i18n.json', false);
+    xhr.open('GET', 'configuration/i18n.json?v=20260528', false);
     xhr.send();
     if (xhr.status === 200) _dict = JSON.parse(xhr.responseText);
   } catch (e) {

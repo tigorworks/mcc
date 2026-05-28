@@ -175,6 +175,9 @@
     .td-team { font-weight: 600; color: var(--white); }
     .td-company { color: var(--text); }
     .td-captain { color: var(--text-dim); font-size: 0.85rem; }
+    .td-wa { font-size: 0.82rem; }
+    .td-wa a { color: #4ade80; text-decoration: none; }
+    .td-wa a:hover { text-decoration: underline; }
     .td-players {
       text-align: center;
       font-size: 0.82rem;
@@ -334,7 +337,7 @@
     @media (max-width: 640px) {
       .dbd-header { padding: 1rem; }
       .dbd-wrap { padding: 1.25rem 1rem 3rem; }
-      .td-captain, .td-players { display: none; }
+      .td-captain, .td-wa, .td-players { display: none; }
       .btn-inv-lbl { display: none; }
     }
   </style>
@@ -389,6 +392,14 @@
         </svg>
         Refresh
       </button>
+      <button class="dbd-refresh" onclick="downloadContacts()" title="Download nomor kontak kapten semua tim">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="7 10 12 15 17 10"></polyline>
+          <line x1="12" y1="15" x2="12" y2="3"></line>
+        </svg>
+        Kontak
+      </button>
     </div>
 
     <!-- Table container -->
@@ -413,6 +424,41 @@
 
     let _allTeams   = [];
     let _allMembers = [];
+
+    /* ── Phone normalizer ───────────────────── */
+    function normalizePhone(raw) {
+      if (!raw) return null;
+      const digits = String(raw).replace(/\D/g, '');
+      if (digits.length < 5) return null;
+      if (digits.startsWith('62')) return '0' + digits.slice(2);
+      if (digits.startsWith('0'))  return digits;
+      return '0' + digits; // starts with 8 or other
+    }
+
+    function formatPhoneDisplay(raw) {
+      const local = normalizePhone(raw);
+      if (!local) return '—';
+      return '+62' + local.slice(1);
+    }
+
+    /* ── Download kontak kapten ─────────────── */
+    function downloadContacts() {
+      if (!_allTeams.length) return;
+      const lines = _allTeams.map(tm => {
+        const name    = tm.name || tm.team_name || tm.nama_tim || '—';
+        const captain = tm.captain || tm.captain_name || tm.kapten || '—';
+        const phone   = normalizePhone(tm.captain_wa || tm.captain_phone || '') || '-';
+        return `${name} : ${phone} (${captain})`;
+      }).join('\n');
+
+      const blob = new Blob([lines], { type: 'text/plain;charset=utf-8' });
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href     = url;
+      a.download = 'kontak-kapten-mcc.txt';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 5000);
+    }
 
     /* ── Rupiah formatter ───────────────────── */
     function formatRupiah(n) {
@@ -722,6 +768,12 @@
             <span class="badge-company">${esc(tm.company || tm.perusahaan || tm.company_name || '—')}</span>
           </td>
           <td class="td-captain">${esc(tm.captain || tm.captain_name || tm.kapten || '—')}</td>
+          <td class="td-wa">${(() => {
+            const p = formatPhoneDisplay(tm.captain_wa || tm.captain_phone || '');
+            if (p === '—') return '—';
+            const local = normalizePhone(tm.captain_wa || tm.captain_phone || '');
+            return `<a href="tel:${local}">${p}</a>`;
+          })()}</td>
           <td class="td-players">${tm.players?.length ?? tm.total_players ?? tm.jumlah_pemain ?? '—'}</td>
           <td class="td-invoice">
             <button class="btn-inv" title="Download Invoice" onclick="downloadInvoice(${allIdx})">
@@ -743,6 +795,7 @@
               <th>Nama Tim</th>
               <th>Perusahaan</th>
               <th class="td-captain">Kapten</th>
+              <th class="td-wa">WA Kapten</th>
               <th class="td-players">Pemain</th>
               <th class="td-invoice">Invoice</th>
             </tr>

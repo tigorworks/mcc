@@ -73,7 +73,7 @@
     "teams.table.player_count": "pemain",
     "teams.pagination.of": "dari",
     "teams.pagination.teams": "tim",
-    "teams.error.load": "Gagal memuat data tim. Silakan coba lagi nanti."
+    "teams.error.load": "Gagal memuat data tim. Silakan coba lagi nanti.",
 
     "members.hero.title": "Member <span>Turnamen</span>",
     "members.hero.subtitle": "Perusahaan-perusahaan yang telah bergabung menjadi member MCC Season 1.",
@@ -257,7 +257,7 @@
     "teams.table.player_count": "players",
     "teams.pagination.of": "of",
     "teams.pagination.teams": "teams",
-    "teams.error.load": "Failed to load team data. Please try again later."
+    "teams.error.load": "Failed to load team data. Please try again later.",
 
     "members.hero.title": "Tournament <span>Members</span>",
     "members.hero.subtitle": "Companies that have officially joined MCC Season 1.",

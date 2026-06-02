@@ -471,25 +471,42 @@
       if (btn) { btn.textContent = 'Membuat PDF...'; btn.disabled = true; }
 
       function doPdf() {
+        /* Parse the full invoice HTML document so <head> styles are preserved */
+        const parsed  = new DOMParser().parseFromString(_invoiceHtml, 'text/html');
+
+        /* Remove no-print elements (e.g. print button inside invoice) */
+        parsed.querySelectorAll('.no-print').forEach(el => el.remove());
+
+        /* Build render container — position:fixed in viewport so html2canvas
+           can see it, but behind everything (z-index negative) */
         const wrap = document.createElement('div');
-        wrap.style.cssText = 'position:absolute;left:-9999px;top:0;width:794px;background:#fff;box-sizing:border-box';
-        const tmp  = document.createElement('div');
-        tmp.innerHTML = _invoiceHtml;
-        const body = tmp.querySelector('body') || tmp;
-        body.querySelectorAll('.no-print').forEach(el => el.remove());
-        wrap.innerHTML = body.innerHTML;
+        wrap.style.cssText = 'position:fixed;top:0;left:0;width:794px;z-index:-9998;pointer-events:none;background:#fff';
+
+        /* Copy <style> tags from invoice <head> so CSS is applied */
+        parsed.querySelectorAll('style').forEach(s => {
+          wrap.appendChild(s.cloneNode(true));
+        });
+
+        /* Content div for html2pdf to target */
+        const content = document.createElement('div');
+        content.style.cssText = 'padding:32px;font-family:"Segoe UI",Arial,sans-serif;color:#1a1a2e;background:#fff';
+        content.innerHTML = parsed.body.innerHTML;
+        wrap.appendChild(content);
         document.body.appendChild(wrap);
 
-        html2pdf().set({
-          margin: 10,
-          filename: 'invoice-mcc.pdf',
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: { scale: 2, useCORS: true },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        }).from(wrap).save().finally(() => {
-          document.body.removeChild(wrap);
-          if (btn) { btn.textContent = 'Download PDF'; btn.disabled = false; }
-        });
+        /* Give browser one tick to apply styles before rendering */
+        setTimeout(() => {
+          html2pdf().set({
+            margin: 10,
+            filename: 'invoice-mcc.pdf',
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, scrollX: 0, scrollY: 0 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          }).from(content).save().finally(() => {
+            document.body.removeChild(wrap);
+            if (btn) { btn.textContent = 'Download PDF'; btn.disabled = false; }
+          });
+        }, 150);
       }
 
       if (window.html2pdf) {

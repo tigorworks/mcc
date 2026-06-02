@@ -638,16 +638,23 @@
 </html>`;
     }
 
-    /* ── Download invoice (per registrasi = per perusahaan) ──── */
+    /* ── Download invoice (per registrasi = company + pic_wa) ──── */
     function downloadInvoice(idx) {
       const tm = _allTeams[idx];
       if (!tm) return;
 
-      /* Kumpulkan semua tim dari perusahaan yang sama */
-      const company   = tm.company || tm.perusahaan || tm.company_name || '';
-      const sameGroup = _allTeams.filter(t =>
-        (t.company || t.perusahaan || t.company_name || '') === company
-      );
+      /* Kelompokkan berdasarkan registrasi yang sama: perusahaan + WhatsApp PIC.
+         Satu submit form bisa mendaftarkan beberapa tim sekaligus — semua tim
+         tersebut berbagi pic_wa yang sama, sehingga masuk ke 1 invoice.
+         Jika perusahaan daftar 2x (pic_wa berbeda) → 2 invoice terpisah. */
+      const company = (tm.company || tm.perusahaan || tm.company_name || '').trim();
+      const picWa   = (tm.pic_wa || '').trim();
+
+      const sameGroup = _allTeams.filter(t => {
+        const co = (t.company || t.perusahaan || t.company_name || '').trim();
+        const wa = (t.pic_wa || '').trim();
+        return co === company && (picWa ? wa === picWa : co === company);
+      });
       const teams = sameGroup.length ? sameGroup : [tm];
 
       const html = generateInvoiceHtml(teams);

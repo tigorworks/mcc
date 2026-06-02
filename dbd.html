@@ -419,16 +419,16 @@
   </div>
 
   <!-- Invoice overlay -->
-  <div id="invOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.88);overflow:auto;padding:1rem">
+  <div id="invOverlay" style="display:none;position:fixed;top:0;right:0;bottom:0;left:0;width:100%;height:100%;z-index:9999;background:rgba(0,0,0,0.88);overflow:auto;-webkit-overflow-scrolling:touch;padding:1rem;box-sizing:border-box">
     <div style="max-width:880px;margin:0 auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,0.6)">
-      <div style="background:#1a1a2e;padding:0.75rem 1rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem">
+      <div style="background:#1a1a2e;padding:0.75rem 1rem;display:-webkit-flex;display:flex;-webkit-justify-content:space-between;justify-content:space-between;-webkit-align-items:center;align-items:center;gap:0.5rem">
         <span style="color:#fff;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:1rem;letter-spacing:0.05em">INVOICE</span>
-        <div style="display:flex;gap:0.5rem">
-          <button id="invPrintBtn" style="background:#e60026;color:#fff;border:none;border-radius:6px;padding:0.45rem 1.1rem;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit">🖨️ Cetak / PDF</button>
-          <button onclick="closeInvoice()" style="background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:6px;padding:0.45rem 0.9rem;cursor:pointer;font-size:0.85rem;font-family:inherit">✕ Tutup</button>
+        <div style="display:-webkit-flex;display:flex;gap:0.5rem">
+          <button id="invPrintBtn" style="background:#e60026;color:#fff;border:none;border-radius:6px;padding:0.45rem 1.1rem;cursor:pointer;font-size:0.85rem;font-weight:600;font-family:inherit">Cetak / PDF</button>
+          <button onclick="closeInvoice()" style="background:rgba(255,255,255,0.12);color:#fff;border:none;border-radius:6px;padding:0.45rem 0.9rem;cursor:pointer;font-size:0.85rem;font-family:inherit">Tutup</button>
         </div>
       </div>
-      <iframe id="invFrame" style="width:100%;height:calc(100vh - 80px);border:none;display:block"></iframe>
+      <iframe id="invFrame" style="width:100%;min-height:600px;height:75vh;border:none;display:block"></iframe>
     </div>
   </div>
 
@@ -441,17 +441,33 @@
 
     /* ── Invoice modal ──────────────────────── */
     function showInvoice(html) {
-      const frame = document.getElementById('invFrame');
-      frame.srcdoc = html;
-      document.getElementById('invOverlay').style.display = '';
+      const overlay = document.getElementById('invOverlay');
+      const frame   = document.getElementById('invFrame');
+
+      overlay.style.display = 'block';
+
+      /* contentDocument.write() is more reliable than srcdoc on iOS Safari */
+      try {
+        const doc = frame.contentDocument || frame.contentWindow.document;
+        doc.open();
+        doc.write(html);
+        doc.close();
+      } catch (e) {
+        frame.srcdoc = html;
+      }
+
       document.getElementById('invPrintBtn').onclick = function () {
-        try { frame.contentWindow.print(); } catch (e) { window.print(); }
+        try { frame.contentWindow.print(); } catch (e) {}
       };
     }
 
     function closeInvoice() {
       document.getElementById('invOverlay').style.display = 'none';
-      document.getElementById('invFrame').srcdoc = '';
+      try {
+        const frame = document.getElementById('invFrame');
+        const doc   = frame.contentDocument || frame.contentWindow.document;
+        doc.open(); doc.write(''); doc.close();
+      } catch (e) {}
     }
 
     /* ── Phone normalizer ───────────────────── */

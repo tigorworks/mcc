@@ -693,16 +693,26 @@
 
       dbg('STEP 2: tm ditemukan = ' + (tm.name || tm.team_name || '?'));
 
-      const company = (tm.company || tm.perusahaan || tm.company_name || '').trim();
-      const picWa   = (tm.pic_wa || '').trim();
-      const sameGroup = _allTeams.filter(t => {
-        const co = (t.company || t.perusahaan || t.company_name || '').trim();
-        const wa = (t.pic_wa || '').trim();
-        return co === company && (picWa ? wa === picWa : co === company);
-      });
-      const teams = sameGroup.length ? sameGroup : [tm];
+      let company, picWa, teams;
+      try {
+        dbg('STEP 2a: ambil company/picWa');
+        company = String(tm.company || tm.perusahaan || tm.company_name || '').trim();
+        picWa   = String(tm.pic_wa || '').trim();
+        dbg('STEP 2b: company=' + company + ', picWa=' + picWa);
 
-      dbg('STEP 3: ' + teams.length + ' tim dalam registrasi ini');
+        const sameGroup = _allTeams.filter(t => {
+          if (!t || typeof t !== 'object') return false;
+          const co = String(t.company || t.perusahaan || t.company_name || '').trim();
+          const wa = String(t.pic_wa || '').trim();
+          return co === company && (picWa ? wa === picWa : true);
+        });
+        teams = sameGroup.length ? sameGroup : [tm];
+        dbg('STEP 3: ' + teams.length + ' tim dalam registrasi ini');
+      } catch (e) {
+        dbg('ERROR di filter: ' + e.message + ' | ' + e.stack);
+        teams = [tm];
+        dbg('STEP 3 (fallback): 1 tim');
+      }
 
       let html;
       try {

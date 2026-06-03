@@ -1254,6 +1254,37 @@ footer {
   .th-company, .td-company { display: none; }
 }
 
+@media (max-width: 480px) {
+  /* Stats cards: fit 3 per row without overflowing */
+  .teams-stat-row { gap: 0.4rem; }
+  .teams-stat-card { min-width: 0; flex: 1 1 0; padding: 0.65rem 0.5rem; }
+  .teams-stat-val { font-size: 1.5rem; }
+  .teams-stat-lbl { font-size: 0.62rem; }
+
+  /* Filter bar: stack vertically */
+  .filter-bar { flex-direction: column; gap: 0.5rem; padding: 0.65rem 0.75rem; }
+  .search-wrap { min-width: 0; width: 100%; }
+  .filter-vdiv { display: none; }
+
+  /* Table: allow horizontal scroll, reduce cell padding */
+  .teams-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .teams-table tbody td { padding: 0.6rem 0.55rem; font-size: 0.86rem; }
+  .teams-table thead th { padding: 0.5rem 0.55rem; font-size: 0.8rem; }
+  .td-name { font-size: 0.88rem; }
+
+  /* Child/roster table: scrollable */
+  .team-detail-row td { padding: 0.7rem 0.55rem !important; }
+  .child-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .child-table { min-width: 280px; }
+
+  /* Pagination: stack info and buttons */
+  .pagination-bar { flex-direction: column; align-items: center; gap: 0.5rem; padding-top: 0.75rem; }
+  .pg-btn { min-width: 1.9rem; height: 1.9rem; font-size: 0.8rem; }
+
+  /* Section inner padding */
+  .section-inner { padding: 2rem 1rem; }
+}
+
 /* ---- Pagination ---- */
 .pagination-bar {
   display: flex;

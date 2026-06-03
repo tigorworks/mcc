@@ -28,14 +28,14 @@
         <td class="ct-gameid">${p.game_id}</td>
         <td class="ct-nick">${p.game_nick}</td>
       </tr>`).join('');
-    return `<table class="child-table">
+    return `<div class="child-table-wrap"><table class="child-table">
       <thead><tr>
         <th data-i18n="teams.table.full_name">Nama Lengkap</th>
         <th data-i18n="teams.table.game_id">Game ID</th>
         <th data-i18n="teams.table.game_nick">Nama IG</th>
       </tr></thead>
       <tbody>${rows}</tbody>
-    </table>`;
+    </table></div>`;
   }
 
   /* ── Main table body ────────────────────── */
